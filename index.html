@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revenue Dashboard</title>
+<!-- GitHub repository entry point. Deploy this file as index.html. -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+/* =========================================================
+   THEME
+   ========================================================= */
+:root{
+  --primary:#2E1A6B; --secondary:#5B3FA8; --accent:#00A3AD;
+  --text:#1F1F24; --muted:#8A8798; --line:#EEEDF3;
+  --bg:#F5F4F9; --surface:#FFFFFF; --tint:#F1EEF8; --tint2:#E6F6F7;
+  --good:#1E7B4F; --good-bg:#E3F4EA; --bad:#B42318; --bad-bg:#FDE8E6;
+  --radius:14px; --shadow:0 1px 2px rgba(46,26,107,.04),0 4px 14px rgba(46,26,107,.05);
+  --font:"Segoe UI","Arial",Helvetica,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font-family:var(--font);color:var(--text);background:var(--bg);font-size:13px;display:flex;flex-direction:column;overflow:hidden}
+
+/* ---------- Header (60px, dark blue) ---------- */
+header{flex:0 0 60px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 24px;gap:16px}
+/* line-height raised from 1 to 1.4 so descenders (g, j, p, q, y) are no longer clipped */
+header h1{font-size:21px;font-weight:600;margin:0;white-space:nowrap;letter-spacing:.2px;line-height:1.4;padding:2px 0;overflow:hidden;text-overflow:ellipsis;min-width:0}
+/* project name: a little smaller than the title */
+header h1 #projTitle{font-size:16px;font-weight:400;color:#D9D4EC;line-height:1.4}
+.hdr-right{display:flex;align-items:center;gap:12px;flex:0 0 auto}
+.seg{display:flex;background:rgba(255,255,255,.12);border-radius:999px;padding:3px}
+.seg button{border:0;background:transparent;font:inherit;color:#D9D4EC;padding:6px 14px;border-radius:999px;cursor:pointer;white-space:nowrap;transition:.2s}
+.seg button.active{background:#fff;color:var(--primary);font-weight:600}
+.toggle{display:flex;align-items:center;gap:8px;font-weight:600;color:#9F95C6;user-select:none}
+.toggle .lbl{cursor:pointer}.toggle .lbl.on{color:#fff}
+.switch{position:relative;width:44px;height:24px;border-radius:999px;background:rgba(255,255,255,.2);border:0;cursor:pointer;padding:0;transition:.2s;flex:0 0 auto}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s}
+.switch.on::after{transform:translateX(20px);background:var(--accent)}
+.unit-sel{appearance:none;-webkit-appearance:none;background:rgba(255,255,255,.12) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23fff'/%3E%3C/svg%3E") no-repeat right 12px center;
+  color:#fff;border:0;border-radius:999px;padding:6px 30px 6px 14px;font:inherit;cursor:pointer}
+.unit-sel option{color:var(--text)}
+.icon-btn{border:0;background:rgba(255,255,255,.12);width:34px;height:34px;border-radius:50%;cursor:pointer;color:#fff;display:grid;place-items:center}
+.icon-btn:hover{background:rgba(255,255,255,.22)}
+.pill-btn{border:0;background:var(--accent);color:#fff;font:inherit;font-weight:600;padding:7px 16px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.pill-btn:hover{filter:brightness(1.08)}
+
+/* Popovers */
+.pop{display:none;position:absolute;top:64px;background:var(--surface);color:var(--text);border-radius:var(--radius);padding:14px;z-index:30;box-shadow:0 8px 30px rgba(46,26,107,.18)}
+.pop.open{display:block}
+#settings{right:24px;width:280px}
+#settings label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
+#settings .err{color:var(--bad);font-size:12px;min-height:16px;margin-top:4px}
+#settings .row{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+#exportMenu{right:70px;width:200px;padding:6px}
+#exportMenu button{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;padding:9px 12px;border-radius:10px;cursor:pointer}
+#exportMenu button:hover{background:var(--tint);color:var(--primary)}
+#busy{display:none;position:fixed;inset:0;background:rgba(245,244,249,.6);z-index:50;place-items:center;font-weight:600;color:var(--primary)}
+#busy.show{display:grid}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--primary);color:#fff;padding:10px 18px;border-radius:999px;font-weight:600;transition:transform .25s;z-index:60;max-width:80vw}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ---------- Common ---------- */
+.inp{width:100%;padding:7px 12px;border:1px solid var(--line);border-radius:999px;font:inherit;background:#fff;outline:none;transition:border .15s;color:var(--text)}
+.inp:focus{border-color:var(--secondary)}
+.inp:disabled{background:var(--bg);color:var(--muted)}
+.inp.invalid{border-color:var(--bad)}
+.btn{background:var(--primary);color:#fff;border:0;padding:8px 18px;font:inherit;font-weight:600;cursor:pointer;border-radius:999px;white-space:nowrap}
+.btn:hover{background:var(--secondary)}
+.btn-line{background:#fff;color:var(--primary);border:1px solid var(--line);padding:7px 14px;font:inherit;font-weight:600;cursor:pointer;border-radius:999px;white-space:nowrap}
+/* light-coloured action buttons (data import / export / clear) */
+.btn-soft{background:var(--tint);color:var(--primary);border:0;padding:8px 16px;font:inherit;font-weight:600;cursor:pointer;border-radius:999px;white-space:nowrap;transition:.15s}
+.btn-soft:hover{background:#E4DEF3}
+.btn-soft.teal{background:var(--tint2);color:#00636A}
+.btn-soft.teal:hover{background:#D3EFF1}
+.btn-soft.danger{background:var(--bad-bg);color:var(--bad)}
+.btn-soft.danger:hover{background:#FAD5D1}
+.panel{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;display:flex;flex-direction:column;min-height:0;min-width:0}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;flex:0 0 auto}
+.panel-head h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--muted);font-size:11.5px}
+.empty{color:var(--muted);text-align:center;margin:auto;padding:10px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+
+main{flex:1 1 auto;min-height:0;padding:12px 24px 14px}
+.page{display:none;height:100%}
+.page.active{display:flex;flex-direction:column}
+
+/* ---------- Dashboard ---------- */
+#page-dashboard{gap:10px}
+.filter-row{flex:0 0 auto;display:flex;align-items:center;gap:8px;min-height:28px}
+.filter-row .flabel{font-size:12px;font-weight:600;color:var(--muted);margin-right:2px}
+.yr{display:flex;gap:6px;flex-wrap:wrap}
+.yr button{border:0;background:#fff;box-shadow:var(--shadow);padding:5px 14px;font:inherit;font-size:12px;cursor:pointer;color:var(--muted);border-radius:999px;transition:.15s}
+.yr button.on{background:var(--primary);color:#fff;font-weight:600}
+.cards{flex:0 0 auto;display:flex;gap:12px;overflow-x:auto;padding-bottom:2px}
+.card{flex:0 1 320px;min-width:230px;background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.card .left{min-width:0;border-left:4px solid;border-radius:2px;padding-left:10px}
+.card .lg{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .tot{font-size:20px;font-weight:700;line-height:1.25;white-space:nowrap}
+.card .cur{font-size:11px;color:var(--muted);font-weight:600}
+.card .right{flex:0 0 auto;display:grid;grid-template-columns:auto auto;column-gap:10px;row-gap:2px;font-size:11.5px}
+.card .right span:nth-child(odd){color:var(--muted)}
+.card .right span:nth-child(even){text-align:right;font-weight:600}
+
+/* 2 x 2 quadrants with equal height and width */
+.quad{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:12px}
+.quad>.panel{overflow:hidden}
+.chart-box{position:relative;flex:1 1 auto;min-height:0}
+.slicer{display:flex;gap:6px}
+.slicer button{border:0;background:var(--bg);padding:5px 12px;font:inherit;font-size:11.5px;cursor:pointer;color:var(--muted);border-radius:999px}
+.slicer button.on{background:var(--tint);color:var(--primary);font-weight:600}
+.slicer button:not(.on) .dot{opacity:.25}
+
+table{width:100%;border-collapse:collapse}
+th,td{padding:0 10px;text-align:left;white-space:nowrap}
+/* identical row geometry in Benchmarking & Comparison so attribute lines align */
+.mtx th{height:34px;vertical-align:middle;font-size:11.5px;font-weight:700;color:var(--text);border-bottom:1px solid var(--line)}
+.mtx td{height:30px;vertical-align:middle;border-bottom:1px solid var(--line)}
+.mtx tr:last-child td{border-bottom:0;font-weight:700}
+.mtx td:first-child{color:var(--muted)}
+.mtx-head{height:22px}
+.num{text-align:right}
+.tbl-wrap{overflow:auto;min-height:0;flex:1 1 auto}
+.hi,.lo,.ball{display:inline-block;font-weight:600;padding:2px 10px;border-radius:999px;font-variant-numeric:tabular-nums}
+.hi,.ball.up{background:var(--good-bg);color:var(--good)}
+.lo,.ball.down{background:var(--bad-bg);color:var(--bad)}
+.ball.flat{background:var(--bg);color:var(--muted)}
+.cmp select{border:1px solid var(--line);border-radius:999px;padding:3px 8px;height:26px;font:inherit;font-weight:700;color:var(--text);background:#fff;max-width:120px}
+
+/* ---------- Data input ---------- */
+#page-input .panel{flex:1 1 auto}
+.title-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.proj{display:flex;align-items:center;gap:8px}
+.proj .inp{width:220px}
+.qty-toggle{display:flex;align-items:center;gap:8px;background:var(--bg);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--muted);user-select:none}
+.qty-toggle .lbl{cursor:pointer}.qty-toggle .lbl.on{color:var(--primary)}
+.qty-toggle .switch{background:#DCD7EA}
+.qty-toggle .switch::after{background:var(--primary)}
+.qty-toggle .switch.on::after{background:var(--accent)}
+#fixedQtyWrap{display:none;align-items:center;gap:6px}
+#fixedQtyWrap.show{display:flex}
+#fixedQty{width:120px;text-align:right}
+.lab{font-size:12px;color:var(--muted);white-space:nowrap}
+.actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+#inputTable th{font-size:11px;font-weight:600;color:var(--muted);padding:8px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;z-index:1}
+#inputTable td{padding:6px 8px;border-bottom:1px solid var(--line)}
+#inputTable tbody tr:hover{background:#FBFAFD}
+.colour-cell{display:flex;align-items:center;gap:8px}
+.swatch{flex:0 0 14px;height:14px;border-radius:50%;border:1px dashed transparent}
+.swatch.none{background:transparent!important;border-color:var(--muted)}
+.combo{position:relative}
+.combo .inp{padding-right:30px;background:#fff}
+.combo-btn{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:0;background:transparent;width:24px;height:24px;border-radius:50%;cursor:pointer;color:var(--muted)}
+.combo-btn:hover{background:var(--tint);color:var(--primary)}
+#legendMenu{display:none;position:fixed;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(46,26,107,.14);padding:4px;z-index:40;max-height:220px;overflow:auto}
+#legendMenu.open{display:block}
+#legendMenu .opt{padding:7px 10px;border-radius:8px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#fff}
+#legendMenu .opt:hover{background:var(--tint);color:var(--primary)}
+.del{border:0;background:var(--bg);color:var(--muted);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:15px;line-height:1}
+.del:hover{background:var(--bad-bg);color:var(--bad)}
+.rev-cell{font-weight:600}
+.warn{display:none;background:#FFF6E5;color:#7A5A00;padding:8px 14px;border-radius:999px;margin-bottom:10px;font-size:12px}
+.warn.show{display:block}
+</style>
+</head>
+<body>
+
+<!-- ================= HEADER ================= -->
+<header>
+  <h1>Revenue Dashboard<span id="projTitle"></span></h1>
+  <div class="hdr-right">
+    <div class="seg" id="nav">
+      <button class="active" data-page="dashboard">Dashboard</button>
+      <button data-page="input">Data Input</button>
+    </div>
+    <div class="toggle">
+      <span class="lbl" id="lblTHB">THB</span>
+      <button class="switch" id="curSwitch" role="switch" aria-label="Currency THB / USD"></button>
+      <span class="lbl" id="lblUSD">USD</span>
+    </div>
+    <select class="unit-sel" id="unitSel" aria-label="Units">
+      <option value="none">No rounding</option>
+      <option value="K">In thousands</option>
+      <option value="M">In millions</option>
+    </select>
+    <button class="pill-btn no-export" id="btnExport">Export</button>
+    <button class="icon-btn no-export" id="btnSettings" title="Settings" aria-label="Settings">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- Settings -->
+<div class="pop no-export" id="settings">
+  <label for="rate">USD Rate (THB per 1 USD)</label>
+  <input id="rate" class="inp" type="text" inputmode="decimal">
+  <div class="err" id="rateErr"></div>
+  <div class="row">
+    <button class="btn-line" id="rateReset">Reset</button>
+    <button class="btn" id="rateApply">Apply</button>
+  </div>
+</div>
+
+<!-- Export menu (dashboard screenshot) -->
+<div class="pop no-export" id="exportMenu">
+  <button data-exp="pdf">Export as PDF</button>
+  <button data-exp="ppt">Export as PowerPoint</button>
+</div>
+<div id="busy" class="no-export">Preparing…</div>
+<div id="toast" class="no-export"></div>
+<div id="legendMenu" class="no-export"></div>
+
+<main>
+  <!-- ================= DASHBOARD ================= -->
+  <section class="page active" id="page-dashboard">
+    <div class="filter-row">
+      <span class="flabel">Year</span>
+      <div class="yr" id="yearSlicer"></div>
+    </div>
+
+    <div class="cards" id="cards"></div>
+
+    <div class="quad">
+      <div class="panel">
+        <div class="panel-head"><h2>ROS: Price vs Revenue</h2></div>
+        <div class="chart-box"><canvas id="scatter"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Revenue Mix</h2>
+          <div class="slicer" id="slicer"></div>
+        </div>
+        <div class="chart-box"><canvas id="stacked"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head mtx-head"><h2>Benchmarking</h2><span class="sub" id="benchSub"></span></div>
+        <div class="tbl-wrap"><table class="mtx" id="bench"></table></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head mtx-head"><h2>Comparison</h2></div>
+        <div class="tbl-wrap"><table class="mtx cmp" id="cmp"></table></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= DATA INPUT ================= -->
+  <section class="page" id="page-input">
+    <div class="warn" id="storageWarn">Local storage is blocked in this view (e.g. SharePoint/OneDrive preview). Data will not be saved after closing. Download the file and open it in Edge or Chrome to keep your data.</div>
+    <div class="panel">
+      <div class="panel-head">
+        <div class="title-row">
+          <div><h2>Data Input</h2><div class="sub">Prices in THB. Colour applies to all rows of the same Legend.</div></div>
+          <div class="proj"><span class="lab">Project Name</span><input id="projName" class="inp" placeholder="Enter project name" maxlength="80"></div>
+          <div class="qty-toggle">
+            <span class="lbl" id="lblVar">Variable qty</span>
+            <button class="switch" id="qtySwitch" role="switch" aria-label="Variable / Fixed quantity"></button>
+            <span class="lbl" id="lblFix">Fixed qty</span>
+          </div>
+          <div id="fixedQtyWrap"><input id="fixedQty" class="inp" inputmode="numeric" placeholder="Quantity"><span class="lab">tests</span></div>
+        </div>
+        <div class="actions">
+          <button class="btn-soft" id="btnTemplate" type="button">Download Template</button>
+          <button class="btn-soft teal" id="btnImport" type="button">Import Excel</button>
+          <button class="btn-soft teal" id="btnExportData" type="button">Export Data</button>
+          <button class="btn-soft danger" id="btnClear" type="button">Clear All</button>
+          <button class="btn" id="addRow" type="button">+ Add Row</button>
+          <input type="file" id="importFile" accept=".xlsx,.xls,.csv" hidden>
+        </div>
+      </div>
+      <div class="tbl-wrap" id="inputWrap">
+        <table id="inputTable">
+          <thead><tr>
+            <th style="width:14%">Colour</th>
+            <th style="width:20%">Legend</th>
+            <th style="width:12%">Category</th>
+            <th class="num" style="width:9%">Year</th>
+            <th class="num" style="width:14%">Price (THB)</th>
+            <th class="num" style="width:13%">Quantity (Test)</th>
+            <th class="num" id="revHead">Revenue</th>
+            <th style="width:44px"></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+/* =========================================================
+   CONSTANTS
+   ========================================================= */
+const STORE_KEY = 'revDash.v9';          // unchanged so existing saved data is kept
+const DEFAULT_RATE = 32.35199;
+const CATS = ['ROS', 'Instrument', 'Rental'];
+const CAT_COLOR = { ROS: '#2E1A6B', Instrument: '#00A3AD', Rental: '#8C6BD6' };   // company-theme colours per revenue type
+const NO_COLOUR = '#B9B5C8';
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const PALETTE = [
+  ['Indigo', '#2E1A6B'], ['Teal', '#00A3AD'], ['Purple', '#7B5CC4'], ['Blue', '#1F6FB2'],
+  ['Green', '#2E8B57'], ['Orange', '#D9822B'], ['Red', '#B42318'], ['Gold', '#B8913A'],
+  ['Pink', '#C2477F'], ['Grey', '#6B6B78']
+];
+const UNIT = { none: { div: 1, tag: '' }, K: { div: 1e3, tag: " '000" }, M: { div: 1e6, tag: ' M' } };
+const THIS_YEAR = new Date().getFullYear();
+const XL_HEAD = ['Legend', 'Category', 'Year', 'Price (THB)', 'Quantity (Test)', 'Total Revenue (THB)'];
+/* Year can be ANY positive whole number: 1, 2, 3, 4 ... or 2025, 2026, 2027 ... */
+const validYear = y => Number.isInteger(y) && y >= 1;
+/* Numeric sort for year labels ('N/A' goes last) */
+const yearSort = (a, b) => {
+  const na = Number(a), nb = Number(b);
+  if (isNaN(na)) return isNaN(nb) ? 0 : 1;
+  if (isNaN(nb)) return -1;
+  return na - nb;
+};
+
+/* =========================================================
+   STATE & SAFE STORAGE
+   ========================================================= */
+let storageOK = true;
+const newRow = year => ({ legend: '', cat: 'ROS', year: year ?? THIS_YEAR, price: 0, qty: 0 });
+function load() {
+  const def = { rows: [newRow()], colors: {}, currency: 'THB', rate: DEFAULT_RATE, unit: 'none',
+                qtyMode: 'variable', fixedQty: 0, cmp: [['', ''], ['', '']], project: '' };
+  try {
+    const s = JSON.parse(localStorage.getItem(STORE_KEY));
+    if (s && Array.isArray(s.rows)) { const m = { ...def, ...s }; if (!m.rows.length) m.rows.push(newRow()); return m; }
+  } catch (e) { storageOK = false; }
+  return def;
+}
+function save() {
+  if (!storageOK) return;
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+  catch (e) { storageOK = false; document.getElementById('storageWarn').classList.add('show'); }
+}
+let state = load();
+let slicerSel = new Set(CATS);      // revenue type slicer (Revenue Mix only)
+let yearSel = null;                 // year slicer: null = all years (default)
+let scatterChart = null, stackedChart = null;
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+const conv = thb => state.currency === 'USD' ? thb / state.rate : thb;
+const fmt = (v, d = 2) => Number(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+const fmt0 = v => fmt(v, 0);                              // all numbers except price: no decimals
+const unitLabel = () => state.currency + UNIT[state.unit].tag;
+const rev = thb => conv(thb) / UNIT[state.unit].div;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const toNum = s => { const n = Number(String(s ?? '').replace(/,/g, '').trim()); return isFinite(n) ? n : NaN; };
+const effQty = r => r.cat === 'Rental' ? 1 : (state.qtyMode === 'fixed' ? (Number(state.fixedQty) || 0) : (Number(r.qty) || 0));
+const revenue = r => (Number(r.price) || 0) * effQty(r);
+const yearKey = r => validYear(r.year) ? String(r.year) : 'N/A';
+
+const colorOf = legend => state.colors[(legend || '').trim()] || '';
+const dispColor = legend => colorOf(legend) || NO_COLOUR;
+const legendNames = () => [...new Set(state.rows.map(r => r.legend.trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+/** Next palette colour not yet used by any Legend (auto-picked once when a Legend is added) */
+function nextColour() {
+  const used = new Set(legendNames().map(colorOf).filter(Boolean));
+  const free = PALETTE.find(p => !used.has(p[1]));
+  return free ? free[1] : PALETTE[used.size % PALETTE.length][1];
+}
+
+/** Rows with a Legend that pass the year slicer */
+const allYears = () => [...new Set(state.rows.filter(r => r.legend.trim()).map(yearKey))].sort(yearSort);
+const activeYears = () => { const ys = allYears(); return yearSel ? ys.filter(y => yearSel.has(y)) : ys; };
+function filteredRows() {
+  const ys = new Set(activeYears());
+  return state.rows.filter(r => r.legend.trim() && CATS.includes(r.cat) && ys.has(yearKey(r)));
+}
+function aggregate(rows = filteredRows()) {
+  const map = new Map();
+  rows.forEach(r => {
+    const name = r.legend.trim();
+    if (!map.has(name)) map.set(name, { legend: name, color: dispColor(name), ROS: 0, Instrument: 0, Rental: 0, rosQty: 0 });
+    const a = map.get(name);
+    a[r.cat] += revenue(r);
+    if (r.cat === 'ROS') a.rosQty += effQty(r);
+  });
+  return [...map.values()].map(a => ({ ...a, total: a.ROS + a.Instrument + a.Rental, rosAvgPrice: a.rosQty ? a.ROS / a.rosQty : 0 }));
+}
+
+function bindQtyInput(el, onVal) {
+  el.addEventListener('input', () => {
+    const raw = el.value.replace(/[^\d]/g, '');
+    el.value = raw ? Number(raw).toLocaleString('en-US') : '';
+    onVal(raw === '' ? null : Number(raw));
+  });
+}
+function bindPriceInput(el, onVal) {
+  el.addEventListener('focus', () => { const n = toNum(el.value); el.value = isNaN(n) || n === 0 ? '' : String(n); });
+  el.addEventListener('input', () => {
+    el.value = el.value.replace(/[^\d.,]/g, '');
+    const n = toNum(el.value), ok = el.value === '' || (!isNaN(n) && n >= 0);
+    el.classList.toggle('invalid', !ok);
+    onVal(ok ? (el.value === '' ? 0 : n) : 0);
+  });
+  el.addEventListener('blur', () => { const n = toNum(el.value); el.value = fmt(isNaN(n) ? 0 : n, 2); });
+}
+function toast(msg) {
+  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+/* =========================================================
+   HEADER CONTROLS & PROJECT NAME
+   ========================================================= */
+function paintProject() {
+  const p = (state.project || '').trim();
+  document.getElementById('projTitle').textContent = p ? ' | ' + p : '';
+  document.title = 'Revenue Dashboard' + (p ? ' | ' + p : '');
+}
+const projIn = document.getElementById('projName');
+projIn.addEventListener('input', () => { state.project = projIn.value; paintProject(); save(); });
+
+function showPage(p) {
+  document.querySelectorAll('#nav button').forEach(x => x.classList.toggle('active', x.dataset.page === p));
+  document.querySelectorAll('.page').forEach(s => s.classList.toggle('active', s.id === 'page-' + p));
+  closeMenu();
+  if (p === 'dashboard') renderDashboard();
+}
+document.querySelectorAll('#nav button').forEach(b => b.onclick = () => showPage(b.dataset.page));
+
+const unitSel = document.getElementById('unitSel');
+unitSel.onchange = () => { state.unit = unitSel.value; save(); renderDashboard(); };
+
+const sw = document.getElementById('curSwitch');
+function paintSwitch() {
+  const usd = state.currency === 'USD';
+  sw.classList.toggle('on', usd); sw.setAttribute('aria-checked', usd);
+  document.getElementById('lblTHB').classList.toggle('on', !usd);
+  document.getElementById('lblUSD').classList.toggle('on', usd);
+}
+sw.onclick = () => { state.currency = state.currency === 'USD' ? 'THB' : 'USD'; paintSwitch(); save(); renderAll(); };
+document.getElementById('lblTHB').onclick = () => { if (state.currency !== 'THB') sw.click(); };
+document.getElementById('lblUSD').onclick = () => { if (state.currency !== 'USD') sw.click(); };
+
+const setPop = document.getElementById('settings'), expPop = document.getElementById('exportMenu');
+const rateIn = document.getElementById('rate'), rateErr = document.getElementById('rateErr');
+document.getElementById('btnSettings').onclick = e => {
+  e.stopPropagation(); expPop.classList.remove('open');
+  rateIn.value = state.rate; rateErr.textContent = ''; setPop.classList.toggle('open');
+};
+document.getElementById('btnExport').onclick = e => { e.stopPropagation(); setPop.classList.remove('open'); expPop.classList.toggle('open'); };
+document.addEventListener('click', e => {
+  if (!setPop.contains(e.target)) setPop.classList.remove('open');
+  if (!expPop.contains(e.target)) expPop.classList.remove('open');
+});
+document.getElementById('rateReset').onclick = () => { rateIn.value = DEFAULT_RATE; rateErr.textContent = ''; };
+document.getElementById('rateApply').onclick = () => {
+  const v = rateIn.value.trim();
+  if (!/^\d+(\.\d+)?$/.test(v) || Number(v) <= 0) { rateErr.textContent = 'Enter a number greater than 0.'; return; }
+  state.rate = Number(v); save(); setPop.classList.remove('open'); renderAll();
+};
+
+/* =========================================================
+   LIBRARIES (loaded on demand)
+   ========================================================= */
+const LIBS = {
+  h2c: 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
+  pdf: 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
+  ppt: 'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js',
+  xlsx: 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',          // import (read)
+  exceljs: 'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js'        // template/export (colours + dropdowns)
+};
+const loadScript = url => new Promise((ok, fail) => {
+  if (document.querySelector(`script[src="${url}"]`)) return ok();
+  const s = document.createElement('script'); s.src = url; s.onload = ok; s.onerror = () => fail(new Error('Could not load ' + url));
+  document.head.appendChild(s);
+});
+const stamp = () => new Date().toISOString().slice(0, 10);
+const safeName = () => (state.project || '').trim().replace(/[\\/:*?"<>|]+/g, '').replace(/\s+/g, '_');
+const fileBase = base => base + (safeName() ? '_' + safeName() : '');
+
+/* ---------- Dashboard screenshot -> PDF / PPT ---------- */
+expPop.querySelectorAll('button').forEach(b => b.onclick = async () => {
+  expPop.classList.remove('open');
+  const busy = document.getElementById('busy'); busy.classList.add('show');
+  try {
+    showPage('dashboard');
+    await loadScript(LIBS.h2c);
+    await loadScript(b.dataset.exp === 'pdf' ? LIBS.pdf : LIBS.ppt);
+    await new Promise(r => setTimeout(r, 450));
+    busy.classList.remove('show');
+    const canvas = await html2canvas(document.body, {
+      scale: 2, backgroundColor: css('--bg'),
+      ignoreElements: el => el.classList && el.classList.contains('no-export')
+    });
+    const img = canvas.toDataURL('image/png');
+    const w = canvas.width / 2, h = canvas.height / 2;
+    if (b.dataset.exp === 'pdf') {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ orientation: w > h ? 'landscape' : 'portrait', unit: 'px', format: [w, h], hotfixes: ['px_scaling'] });
+      pdf.addImage(img, 'PNG', 0, 0, w, h);
+      pdf.save(`${fileBase('Revenue_Dashboard')}_${stamp()}.pdf`);
+    } else {
+      const pptx = new PptxGenJS(); pptx.layout = 'LAYOUT_WIDE';
+      const slide = pptx.addSlide(); slide.background = { color: css('--bg').replace('#', '') };
+      const SW = 13.333, SH = 7.5, k = Math.min(SW / w, SH / h), iw = w * k, ih = h * k;
+      slide.addImage({ data: img, x: (SW - iw) / 2, y: (SH - ih) / 2, w: iw, h: ih });
+      await pptx.writeFile({ fileName: `${fileBase('Revenue_Dashboard')}_${stamp()}.pptx` });
+    }
+  } catch (err) {
+    alert('Export failed: ' + err.message + '\nPlease check your internet connection.');
+  } finally { busy.classList.remove('show'); }
+});
+
+/* =========================================================
+   EXCEL: template / export (ExcelJS: colours, dropdown, formula)
+          import (SheetJS: reads Legend..Quantity only)
+   ========================================================= */
+const XL = { head: 'FF2E1A6B', headFont: 'FFFFFFFF', band1: 'FFFFFFFF', band2: 'FFF5F4F9', calc: 'FFE6F6F7', calcFont: 'FF00636A', border: 'FFDCD7EA' };
+const xfill = argb => ({ type: 'pattern', pattern: 'solid', fgColor: { argb } });
+const thin = { style: 'thin', color: { argb: XL.border } };
+const box = { top: thin, left: thin, bottom: thin, right: thin };
+
+/** Columns: A Legend | B Category | C Year | D Price | E Quantity | F Total Revenue (=D*E) */
+async function buildWorkbook(rows, blankRows) {
+  await loadScript(LIBS.exceljs);
+  const wb = new ExcelJS.Workbook(); wb.creator = 'Revenue Dashboard';
+  const ws = wb.addWorksheet('Data', { views: [{ state: 'frozen', ySplit: 1 }] });
+  ws.columns = [{ width: 26 }, { width: 16 }, { width: 10 }, { width: 18 }, { width: 18 }, { width: 22 }];
+
+  const h = ws.getRow(1); h.values = XL_HEAD; h.height = 24;
+  h.eachCell(c => {
+    c.fill = xfill(XL.head); c.font = { bold: true, color: { argb: XL.headFont } };
+    c.alignment = { vertical: 'middle', horizontal: 'center' }; c.border = box;
+  });
+
+  const n = Math.max(rows.length + blankRows, 1);
+  for (let i = 0; i < n; i++) {
+    const R = i + 2, r = rows[i], row = ws.getRow(R);
+    if (r) {
+      row.getCell(1).value = r.legend.trim();
+      row.getCell(2).value = r.cat;
+      row.getCell(3).value = validYear(r.year) ? r.year : null;
+      row.getCell(4).value = Number(r.price) || 0;
+      row.getCell(5).value = effQty(r);
+      row.getCell(6).value = { formula: `D${R}*E${R}`, result: revenue(r) };
+    } else {
+      row.getCell(6).value = { formula: `IF(OR(D${R}="",E${R}=""),"",D${R}*E${R})` };
+    }
+    const band = i % 2 ? XL.band2 : XL.band1;
+    for (let c = 1; c <= 6; c++) {
+      const cell = row.getCell(c);
+      cell.border = box;
+      cell.fill = xfill(c === 6 ? XL.calc : band);
+      if (c === 6) cell.font = { bold: true, color: { argb: XL.calcFont } };
+      if (c === 2 || c === 3) cell.alignment = { horizontal: 'center' };
+      if (c === 3) cell.numFmt = '0';
+      if (c === 4) cell.numFmt = '#,##0.00';
+      if (c >= 5) cell.numFmt = '#,##0';
+    }
+    row.getCell(2).dataValidation = { type: 'list', allowBlank: true, formulae: ['"ROS,Instrument,Rental"'],
+      showErrorMessage: true, errorStyle: 'stop', errorTitle: 'Invalid Category', error: 'Please select ROS, Instrument or Rental.' };
+    /* Year: any whole number of 1 or more (e.g. 1, 2, 3 or 2025, 2026) */
+    row.getCell(3).dataValidation = { type: 'whole', operator: 'greaterThanOrEqual', allowBlank: true, formulae: [1],
+      showErrorMessage: true, errorTitle: 'Invalid Year', error: 'Year must be a whole number of 1 or more, e.g. 1, 2, 3 or 2026.' };
+    row.getCell(4).dataValidation = { type: 'decimal', operator: 'greaterThanOrEqual', allowBlank: true, formulae: [0],
+      showErrorMessage: true, errorTitle: 'Invalid Price', error: 'Price must be a number of 0 or more.' };
+    row.getCell(5).dataValidation = { type: 'whole', operator: 'greaterThanOrEqual', allowBlank: true, formulae: [0],
+      showErrorMessage: true, errorTitle: 'Invalid Quantity', error: 'Quantity must be a whole number of 0 or more.' };
+  }
+  ws.autoFilter = 'A1:F1';
+
+  const ins = wb.addWorksheet('Instructions');
+  ins.columns = [{ width: 95 }];
+  [
+    'How to fill in this template',
+    '1. Fill in Legend, Category, Year, Price (THB) and Quantity (Test) on the "Data" sheet (white/grey cells).',
+    '2. Select Category from the dropdown: ROS, Instrument or Rental.',
+    '3. Year can be any whole number of 1 or more, e.g. 1, 2, 3, 4 or 2025, 2026, 2027.',
+    '4. Rental quantity is always imported as 1.',
+    '5. Total Revenue (THB) (teal column) is a formula and is NOT imported. Colours are set in the app.',
+    '6. Keep the header row and column order unchanged.'
+  ].forEach((t, k) => {
+    const c = ins.getCell(k + 1, 1); c.value = t;
+    if (!k) { c.fill = xfill(XL.head); c.font = { bold: true, color: { argb: XL.headFont } }; ins.getRow(1).height = 22; c.alignment = { vertical: 'middle' }; }
+  });
+  return wb;
+}
+async function downloadWorkbook(wb, name) {
+  const buf = await wb.xlsx.writeBuffer();
+  const url = URL.createObjectURL(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+  const a = document.createElement('a'); a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+async function withBusy(fn, lib) {
+  const busy = document.getElementById('busy'); busy.classList.add('show');
+  try { if (lib) await loadScript(lib); await fn(); }
+  catch (err) { alert('Excel action failed: ' + err.message + '\nPlease check your internet connection.'); }
+  finally { busy.classList.remove('show'); }
+}
+
+document.getElementById('btnTemplate').onclick = () => withBusy(async () => {
+  await downloadWorkbook(await buildWorkbook([], 200), 'Revenue_Input_Template.xlsx');
+});
+document.getElementById('btnExportData').onclick = () => withBusy(async () => {
+  const rows = state.rows.filter(r => r.legend.trim());
+  if (!rows.length) { toast('No data to export.'); return; }
+  await downloadWorkbook(await buildWorkbook(rows, 50), `${fileBase('Revenue_Data')}_${stamp()}.xlsx`);
+});
+
+const importFile = document.getElementById('importFile');
+document.getElementById('btnImport').onclick = () => importFile.click();
+importFile.onchange = e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  withBusy(async () => {
+    const wb = XLSX.read(await f.arrayBuffer(), { type: 'array' });
+    const ws = wb.Sheets['Data'] || wb.Sheets[wb.SheetNames[0]];
+    const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '' });
+    if (!aoa.length) throw new Error('The file is empty.');
+    const head = aoa[0].map(x => String(x).trim().toLowerCase());
+    const col = (key, def) => { const i = head.findIndex(x => x.startsWith(key)); return i >= 0 ? i : def; };
+    const cL = col('legend', 0), cC = col('category', 1), cY = col('year', 2), cP = col('price', 3), cQ = col('quantity', 4);
+
+    const rows = [], bad = [];
+    aoa.slice(1).forEach((r, i) => {
+      const legend = String(r[cL] ?? '').trim(), catRaw = String(r[cC] ?? '').trim();
+      if (!legend && !catRaw && r[cY] === '' && r[cP] === '' && r[cQ] === '') return;     // empty line
+      const cat = CATS.find(c => c.toLowerCase() === catRaw.toLowerCase());
+      const year = Math.round(toNum(r[cY])), price = toNum(r[cP]), qty = toNum(r[cQ]);
+      if (!legend || !cat || !validYear(year) || isNaN(price) || price < 0) { bad.push(i + 2); return; }
+      rows.push({ legend, cat, year, price, qty: cat === 'Rental' ? 1 : (isNaN(qty) || qty < 0 ? 0 : Math.round(qty)) });
+    });
+    if (!rows.length) throw new Error('No valid rows found. Check the Legend, Category, Year and Price columns.');
+
+    const replace = state.rows.some(r => r.legend.trim())
+      ? confirm(`Import ${rows.length} row(s).\n\nOK = replace current data\nCancel = add to current data`)
+      : true;
+    state.rows = replace ? rows : state.rows.filter(r => r.legend.trim()).concat(rows);
+    // auto-pick a colour once for each new Legend
+    legendNames().forEach(n => { if (!colorOf(n)) state.colors[n] = nextColour(); });
+    state.qtyMode = 'variable'; paintQtyMode();
+    yearSel = null;
+    save(); renderAll();
+    toast(`Imported ${rows.length} row(s)` + (bad.length ? ` · skipped row(s) ${bad.slice(0, 10).join(', ')}${bad.length > 10 ? '…' : ''}` : ''));
+  }, LIBS.xlsx);
+};
+
+/* Clear all data (rows + colours). Project name, currency and rate are kept. */
+document.getElementById('btnClear').onclick = () => {
+  if (!confirm('Clear all data rows and Legend colours?\nThis cannot be undone. Export your data first if you need a copy.')) return;
+  state.rows = [newRow()]; state.colors = {}; state.cmp = [['', ''], ['', '']]; yearSel = null;
+  save(); renderAll(); toast('All data cleared.');
+};
+
+/* =========================================================
+   DATA INPUT
+   ========================================================= */
+const tbody = document.querySelector('#inputTable tbody');
+function colourOptions(sel) {
+  const list = !sel || PALETTE.some(p => p[1] === sel) ? PALETTE : [...PALETTE, ['Custom', sel]];
+  return `<option value="" ${sel ? '' : 'selected'} disabled>Select colour</option>` +
+    list.map(([n, h]) => `<option value="${h}" ${h === sel ? 'selected' : ''}>${n}</option>`).join('');
+}
+
+/* ---------- Legend combobox (white dropdown of existing Legends) ---------- */
+const menu = document.getElementById('legendMenu');
+let menuInput = null;
+function openMenu(inp, showAll) {
+  const q = showAll ? '' : inp.value.trim().toLowerCase();
+  const names = legendNames().filter(n => n.toLowerCase().includes(q) && n !== inp.value.trim());
+  if (!names.length) { closeMenu(); return; }
+  menuInput = inp;
+  menu.innerHTML = names.map(n => `<div class="opt" data-v="${esc(n)}"><i class="dot" style="background:${dispColor(n)}"></i>${esc(n)}</div>`).join('');
+  const b = inp.getBoundingClientRect();
+  menu.style.left = b.left + 'px'; menu.style.top = (b.bottom + 4) + 'px'; menu.style.width = b.width + 'px';
+  menu.classList.add('open');
+}
+function closeMenu() { menu.classList.remove('open'); menuInput = null; }
+menu.addEventListener('mousedown', e => {
+  const o = e.target.closest('.opt'); if (!o || !menuInput) return;
+  e.preventDefault();
+  const inp = menuInput; inp.value = o.dataset.v; closeMenu();
+  inp._commit();
+});
+document.getElementById('inputWrap').addEventListener('scroll', closeMenu);
+window.addEventListener('resize', closeMenu);
+
+/* ---------- Variable / Fixed quantity toggle ---------- */
+const qsw = document.getElementById('qtySwitch'), fqWrap = document.getElementById('fixedQtyWrap'), fqIn = document.getElementById('fixedQty');
+function paintQtyMode() {
+  const fixed = state.qtyMode === 'fixed';
+  qsw.classList.toggle('on', fixed); qsw.setAttribute('aria-checked', fixed);
+  document.getElementById('lblVar').classList.toggle('on', !fixed);
+  document.getElementById('lblFix').classList.toggle('on', fixed);
+  fqWrap.classList.toggle('show', fixed);
+  fqIn.value = state.fixedQty ? fmt0(state.fixedQty) : '';
+}
+function setQtyMode(m) { state.qtyMode = m; paintQtyMode(); save(); renderAll(); if (m === 'fixed') fqIn.focus(); }
+qsw.onclick = () => setQtyMode(state.qtyMode === 'fixed' ? 'variable' : 'fixed');
+document.getElementById('lblVar').onclick = () => setQtyMode('variable');
+document.getElementById('lblFix').onclick = () => setQtyMode('fixed');
+bindQtyInput(fqIn, v => {
+  state.fixedQty = v || 0; save();
+  tbody.querySelectorAll('tr').forEach((tr, i) => {
+    const r = state.rows[i]; if (!r) return;
+    tr.querySelector('[data-f="qty"]').value = fmt0(effQty(r));
+    tr.querySelector('[data-rev]').textContent = fmt0(conv(revenue(r)));
+  });
+});
+
+function paintColourCell(tr, legend) {
+  const has = legend.trim() !== '', c = colorOf(legend);
+  const s = tr.querySelector('.swatch'), sel = tr.querySelector('[data-f="color"]');
+  s.classList.toggle('none', !c); s.style.background = c || '';
+  sel.disabled = !has; sel.innerHTML = colourOptions(c);
+}
+
+function renderInput() {
+  closeMenu();
+  tbody.innerHTML = '';
+  document.getElementById('revHead').textContent = `Revenue (${state.currency})`;
+  const fixed = state.qtyMode === 'fixed';
+  state.rows.forEach((r, i) => {
+    const has = r.legend.trim() !== '';
+    const lockQty = fixed || r.cat === 'Rental';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><div class="colour-cell"><span class="swatch"></span><select class="inp" data-f="color"></select></div></td>
+      <td><div class="combo">
+            <input class="inp ${has ? '' : 'invalid'}" data-f="legend" value="${esc(r.legend)}" placeholder="Type or select" autocomplete="off">
+            <button class="combo-btn" type="button" tabindex="-1" title="Select existing legend">&#9662;</button>
+          </div></td>
+      <td><select class="inp" data-f="cat">${CATS.map(c => `<option ${c === r.cat ? 'selected' : ''}>${c}</option>`).join('')}</select></td>
+      <td><input class="inp ${validYear(r.year) ? '' : 'invalid'}" data-f="year" inputmode="numeric" maxlength="9" value="${r.year ?? ''}" style="text-align:right"></td>
+      <td><input class="inp" data-f="price" inputmode="decimal" value="${fmt(r.price, 2)}" style="text-align:right"></td>
+      <td><input class="inp" data-f="qty" inputmode="numeric" value="${fmt0(effQty(r))}" ${lockQty ? 'disabled' : ''} style="text-align:right"></td>
+      <td class="num rev-cell" data-rev>${fmt0(conv(revenue(r)))}</td>
+      <td><button class="del" type="button" title="Delete row">&times;</button></td>`;
+    paintColourCell(tr, r.legend);
+
+    /* Legend: typing does not assign a colour; colour is auto-picked once when the Legend is committed */
+    const lg = tr.querySelector('[data-f="legend"]');
+    lg._commit = () => {
+      r.legend = lg.value.trim();
+      if (r.legend && !colorOf(r.legend)) state.colors[r.legend] = nextColour();
+      save(); renderInput();
+    };
+    lg.addEventListener('input', () => {
+      r.legend = lg.value; lg.classList.toggle('invalid', !lg.value.trim());
+      paintColourCell(tr, r.legend); save(); openMenu(lg);
+    });
+    lg.addEventListener('focus', () => openMenu(lg));
+    lg.addEventListener('blur', () => setTimeout(() => { if (menuInput === lg) closeMenu(); }, 150));
+    lg.addEventListener('change', () => lg._commit());
+    lg.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
+    const cb = tr.querySelector('.combo-btn');
+    cb.addEventListener('mousedown', e => {
+      e.preventDefault();
+      if (menu.classList.contains('open') && menuInput === lg) { closeMenu(); return; }
+      lg.focus(); openMenu(lg, true);
+    });
+
+    tr.querySelector('[data-f="color"]').addEventListener('change', e => {
+      const k = r.legend.trim(); if (k) state.colors[k] = e.target.value; save(); renderAll();
+    });
+
+    /* Year: any positive whole number (1, 2, 3 ... or 2025, 2026 ...) */
+    const yr = tr.querySelector('[data-f="year"]');
+    yr.addEventListener('input', () => {
+      yr.value = yr.value.replace(/[^\d]/g, '').slice(0, 9);
+      r.year = yr.value ? Number(yr.value) : null;
+      yr.classList.toggle('invalid', !validYear(r.year)); save();
+    });
+    yr.addEventListener('blur', () => { if (validYear(r.year)) yr.value = String(r.year); });   // tidy "007" -> "7"
+
+    const q = tr.querySelector('[data-f="qty"]');
+    bindQtyInput(q, v => { r.qty = v || 0; afterEdit(r, tr); });
+    bindPriceInput(tr.querySelector('[data-f="price"]'), v => { r.price = v; afterEdit(r, tr); });
+    tr.querySelector('[data-f="cat"]').addEventListener('change', e => {
+      r.cat = e.target.value;
+      q.disabled = state.qtyMode === 'fixed' || r.cat === 'Rental';
+      if (r.cat === 'Rental') r.qty = 1;
+      q.value = fmt0(effQty(r)); afterEdit(r, tr);
+    });
+    tr.querySelector('.del').onclick = () => {
+      state.rows.splice(i, 1); if (!state.rows.length) state.rows.push(newRow());
+      save(); renderAll();
+    };
+    tbody.appendChild(tr);
+  });
+}
+function afterEdit(r, tr) { tr.querySelector('[data-rev]').textContent = fmt0(conv(revenue(r))); save(); }
+
+document.getElementById('addRow').onclick = () => {
+  const last = state.rows[state.rows.length - 1];
+  state.rows.push(newRow(last && validYear(last.year) ? last.year : THIS_YEAR));   // new row copies the previous row's year
+  save(); renderInput();
+  const tr = tbody.lastElementChild;
+  if (tr) { tr.scrollIntoView({ block: 'nearest' }); tr.querySelector('[data-f="legend"]').focus(); }
+};
+
+/* =========================================================
+   CHART PLUGINS
+   ========================================================= */
+const FONT_B = () => '700 11px ' + css('--font');
+const FONT_R = () => '600 10px ' + css('--font');
+
+const bubbleLines = d => [d.label, fmt0(d.y), 'Avg ' + fmt(d.x, 2)];
+function bubbleRadius(d) {
+  const c = document.createElement('canvas').getContext('2d'), L = bubbleLines(d);
+  c.font = FONT_B(); const w0 = c.measureText(L[0]).width;
+  c.font = FONT_R(); const w = Math.max(w0, c.measureText(L[1]).width, c.measureText(L[2]).width);
+  return Math.ceil(Math.sqrt((w / 2) ** 2 + 22 ** 2)) + 6;
+}
+const scatterLabels = {
+  id: 'scatterLabels',
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart, ds = chart.data.datasets[0];
+    ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff';
+    chart.getDatasetMeta(0).data.forEach((pt, i) => {
+      bubbleLines(ds.data[i]).forEach((t, k) => { ctx.font = k === 0 ? FONT_B() : FONT_R(); ctx.fillText(t, pt.x, pt.y + (k - 1) * 14); });
+    });
+    ctx.restore();
+  }
+};
+
+/** Revenue Mix labels: segment values, column total on top, year under each column */
+const stackLabels = {
+  id: 'stackLabels',
+  afterDatasetsDraw(chart) {
+    const { ctx, chartArea } = chart, groups = new Map();
+    ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    chart.data.datasets.forEach((ds, k) => {
+      chart.getDatasetMeta(k).data.forEach((bar, i) => {
+        const v = ds.data[i] || 0, key = ds.stack + '|' + i;
+        if (!groups.has(key)) groups.set(key, { x: bar.x, top: Infinity, tot: 0, year: ds.stack, w: bar.width });
+        if (!v) return;
+        const g = groups.get(key); g.tot += v; g.top = Math.min(g.top, bar.y);
+        const h = Math.abs(bar.base - bar.y), txt = fmt0(v);
+        ctx.font = FONT_R();
+        if (h >= 18 && ctx.measureText(txt).width < bar.width - 6) { ctx.fillStyle = '#fff'; ctx.fillText(txt, bar.x, (bar.y + bar.base) / 2); }
+      });
+    });
+    groups.forEach(g => {
+      if (g.tot <= 0) return;
+      ctx.font = '700 11px ' + css('--font'); ctx.fillStyle = css('--text');
+      ctx.fillText(fmt0(g.tot), g.x, g.top - 10);
+      ctx.font = '600 10px ' + css('--font'); ctx.fillStyle = css('--muted');
+      ctx.fillText(g.year, g.x, chartArea.bottom + 9);
+    });
+    ctx.restore();
+  }
+};
+
+/* =========================================================
+   DASHBOARD
+   ========================================================= */
+function buildSlicer() {
+  const s = document.getElementById('slicer');
+  s.innerHTML = CATS.map(c => `<button data-cat="${c}" class="${slicerSel.has(c) ? 'on' : ''}"><i class="dot" style="background:${CAT_COLOR[c]}"></i>${c}</button>`).join('');
+  s.querySelectorAll('button').forEach(b => b.onclick = () => {
+    const c = b.dataset.cat;
+    if (slicerSel.has(c)) { if (slicerSel.size === 1) return; slicerSel.delete(c); } else slicerSel.add(c);
+    b.classList.toggle('on', slicerSel.has(c)); renderDashboard();
+  });
+}
+
+/* Year slicer: "All" (default) + one pill per year.
+   From "All", clicking a year selects only that year; then clicks add/remove years. */
+function buildYearSlicer() {
+  const box = document.getElementById('yearSlicer'), ys = allYears();
+  if (yearSel) { yearSel = new Set([...yearSel].filter(y => ys.includes(y))); if (!yearSel.size || yearSel.size === ys.length) yearSel = null; }
+  box.innerHTML = `<button data-y="*" class="${yearSel ? '' : 'on'}">All</button>` +
+    ys.map(y => `<button data-y="${y}" class="${!yearSel || yearSel.has(y) ? (yearSel ? 'on' : '') : ''}">${y}</button>`).join('');
+  box.querySelectorAll('button').forEach(b => b.onclick = () => {
+    const y = b.dataset.y;
+    if (y === '*') yearSel = null;
+    else if (!yearSel) yearSel = new Set([y]);
+    else {
+      yearSel.has(y) ? yearSel.delete(y) : yearSel.add(y);
+      if (!yearSel.size || yearSel.size === ys.length) yearSel = null;
+    }
+    renderDashboard();
+  });
+}
+
+function range(vals, padPct) {
+  if (!vals.length) return {};
+  let mn = Math.min(...vals), mx = Math.max(...vals);
+  if (mn === mx) { const p = Math.abs(mn) * 0.3 || 1; mn -= p; mx += p; }
+  const pad = (mx - mn) * padPct;
+  return { min: Math.max(0, mn - pad), max: mx + pad };
+}
+
+const ATTRS = [
+  { name: 'ROS Quantity (Test)', val: a => a.rosQty,            dec: 0 },
+  { name: 'ROS Avg Price',       val: a => conv(a.rosAvgPrice), dec: 2 },
+  { name: 'ROS Revenue',         val: a => rev(a.ROS),          dec: 0 },
+  { name: 'Instrument Revenue',  val: a => rev(a.Instrument),   dec: 0 },
+  { name: 'Rental Revenue',      val: a => rev(a.Rental),       dec: 0 },
+  { name: 'Total Revenue',       val: a => rev(a.total),        dec: 0 }
+];
+
+function renderDashboard() {
+  if (!document.getElementById('page-dashboard').classList.contains('active')) return;   // render only when visible
+  if (typeof Chart === 'undefined') {
+    document.getElementById('cards').innerHTML = '<div class="card"><span class="empty">Charts could not load. Check your internet connection.</span></div>';
+    return;
+  }
+  Chart.defaults.font.family = css('--font'); Chart.defaults.font.size = 11; Chart.defaults.color = css('--muted');
+  buildYearSlicer();
+  const rows = filteredRows(), data = aggregate(rows), U = unitLabel();
+  const noGrid = { grid: { display: false }, border: { color: css('--line') }, ticks: { padding: 4, callback: v => fmt0(v) } };
+
+  /* ----- Cards (selected years, total) ----- */
+  document.getElementById('cards').innerHTML = data.length ? data.map(a => `
+    <div class="card">
+      <div class="left" style="border-color:${a.color}">
+        <div class="lg" style="color:${a.color}" title="${esc(a.legend)}">${esc(a.legend)}</div>
+        <div class="tot">${fmt0(rev(a.total))}</div>
+        <div class="cur">Total Revenue (${U})</div>
+      </div>
+      <div class="right">
+        ${CATS.map(c => `<span><i class="dot" style="background:${CAT_COLOR[c]}"></i>${c}</span><span>${fmt0(rev(a[c]))}</span>`).join('')}
+      </div>
+    </div>`).join('') : '<div class="card"><span class="empty">No data yet. Add rows in Data Input.</span></div>';
+
+  /* ----- Scatter (ROS, selected years in total) ----- */
+  const pts = data.filter(a => a.rosQty > 0).map(a => ({ x: conv(a.rosAvgPrice), y: rev(a.ROS), label: a.legend, color: a.color }));
+  const radii = pts.map(bubbleRadius), maxR = Math.max(0, ...radii);
+  if (scatterChart) scatterChart.destroy();
+  scatterChart = new Chart(document.getElementById('scatter'), {
+    type: 'scatter',
+    data: { datasets: [{ data: pts, backgroundColor: pts.map(p => p.color), pointRadius: radii, pointHoverRadius: radii.map(r => r + 2), borderColor: '#fff', borderWidth: 2 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: { duration: 300 }, clip: false,
+      layout: { padding: { top: maxR, right: maxR, bottom: 4, left: 4 } },
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: c => `${c.raw.label}: Avg price ${fmt(c.raw.x, 2)} | Revenue ${fmt0(c.raw.y)}` } } },
+      scales: {
+        x: { ...noGrid, ...range(pts.map(p => p.x), 0.35), ticks: { padding: 4, callback: v => fmt(v, 2) }, title: { display: true, text: `Avg Price (${state.currency})` } },
+        y: { ...noGrid, ...range(pts.map(p => p.y), 0.35), title: { display: true, text: `ROS Revenue (${U})` } }
+      }
+    },
+    plugins: [scatterLabels]
+  });
+
+  /* ----- Revenue Mix: one column per year within each Legend, stacked by revenue type ----- */
+  const sel = CATS.filter(c => slicerSel.has(c));
+  const years = activeYears();
+  const names = data.map(a => a.legend);
+  const ly = {};                                   // ly[legend][year][cat] = THB
+  rows.forEach(r => {
+    const n = r.legend.trim(), y = yearKey(r);
+    ((ly[n] ??= {})[y] ??= { ROS: 0, Instrument: 0, Rental: 0 })[r.cat] += revenue(r);
+  });
+  const val = (n, y, c) => ly[n]?.[y]?.[c] || 0;
+  // index of the top (last non-zero) revenue type for each legend/year -> rounded top corners only there
+  const topK = {};
+  years.forEach(y => topK[y] = names.map(n => { let t = -1; sel.forEach((c, k) => { if (val(n, y, c) > 0) t = k; }); return t; }));
+
+  const datasets = [];
+  years.forEach(y => sel.forEach((c, k) => datasets.push({
+    label: `${c} ${y}`, stack: y, cat: c,
+    data: names.map(n => rev(val(n, y, c))),
+    backgroundColor: CAT_COLOR[c], borderSkipped: false,
+    borderRadius: ctx => topK[y][ctx.dataIndex] === k ? { topLeft: 8, topRight: 8, bottomLeft: 0, bottomRight: 0 } : 0,
+    maxBarThickness: 48, categoryPercentage: .8, barPercentage: .9
+  })));
+
+  if (stackedChart) stackedChart.destroy();
+  stackedChart = new Chart(document.getElementById('stacked'), {
+    type: 'bar',
+    data: { labels: names, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
+      layout: { padding: { top: 20 } },
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { title: c => `${c[0].label} · ${c[0].dataset.stack}`, label: c => `${c.dataset.cat}: ${fmt0(c.raw)}` } } },
+      scales: {
+        x: { stacked: true, grid: { display: false }, border: { color: css('--line') },
+             ticks: { padding: 18, color: ctx => (data[ctx.index] || {}).color || css('--muted'), font: { weight: '700' } } },
+        y: { ...noGrid, stacked: true, beginAtZero: true, grace: '12%' }
+      }
+    },
+    plugins: [stackLabels]
+  });
+
+  renderBench(data, U);
+  renderCompare(data);
+}
+
+/* ----- Benchmarking ----- */
+function renderBench(data, U) {
+  document.getElementById('benchSub').textContent = `Revenue in ${U}`;
+  const t = document.getElementById('bench');
+  if (!data.length) { t.innerHTML = '<tbody><tr><td class="empty">No data</td></tr></tbody>'; return; }
+  t.innerHTML = `
+    <thead><tr><th></th>${data.map(a => `<th class="num"><i class="dot" style="background:${a.color}"></i>${esc(a.legend)}</th>`).join('')}</tr></thead>
+    <tbody>${ATTRS.map(at => {
+      const vals = data.map(at.val), mx = Math.max(...vals), mn = Math.min(...vals);
+      const scale = data.length > 1 && mx !== mn;
+      return `<tr><td>${at.name}</td>${vals.map(v => {
+        const c = scale && v === mx ? 'hi' : scale && v === mn ? 'lo' : '', txt = fmt(v, at.dec);
+        return `<td class="num">${c ? `<span class="${c}">${txt}</span>` : txt}</td>`;
+      }).join('')}</tr>`;
+    }).join('')}</tbody>`;
+}
+
+/* ----- Comparison ----- */
+function renderCompare(data) {
+  const t = document.getElementById('cmp');
+  if (data.length < 2) { t.innerHTML = '<tbody><tr><td class="empty">Add at least 2 legends to compare</td></tr></tbody>'; return; }
+  const names = data.map(a => a.legend);
+  if (!Array.isArray(state.cmp) || state.cmp.length !== 2) state.cmp = [['', ''], ['', '']];
+  state.cmp.forEach((p, k) => {
+    if (!names.includes(p[0])) p[0] = names[0];
+    if (!names.includes(p[1])) p[1] = names[Math.min(k + 1, names.length - 1)];
+  });
+  const byName = n => data.find(a => a.legend === n);
+  const opts = cur => names.map(n => `<option ${n === cur ? 'selected' : ''}>${esc(n)}</option>`).join('');
+  const cell = (at, [x, y]) => {
+    const X = at.val(byName(x)), Y = at.val(byName(y)), d = X - Y, v = fmt(Math.abs(d), at.dec);
+    if (Math.abs(d) < 1e-9) return `<span class="ball flat">– ${v} | 0%</span>`;
+    const pct = Y ? `${d > 0 ? '+' : '-'}${fmt0(Math.abs(d / Y * 100))}%` : 'n/a';
+    return d > 0 ? `<span class="ball up">▲ ${v} | ${pct}</span>` : `<span class="ball down">▼ ${v} | ${pct}</span>`;
+  };
+  const head = k => `<th class="num"><select data-c="${k}" data-s="0">${opts(state.cmp[k][0])}</select>
+      <span class="sub"> vs </span><select data-c="${k}" data-s="1">${opts(state.cmp[k][1])}</select></th>`;
+  t.innerHTML = `
+    <thead><tr><th></th>${head(0)}${head(1)}</tr></thead>
+    <tbody>${ATTRS.map(at => `<tr><td>${at.name}</td><td class="num">${cell(at, state.cmp[0])}</td><td class="num">${cell(at, state.cmp[1])}</td></tr>`).join('')}</tbody>`;
+  t.querySelectorAll('select').forEach(s => s.onchange = () => {
+    state.cmp[+s.dataset.c][+s.dataset.s] = s.value; save(); renderCompare(aggregate());
+  });
+}
+
+/* =========================================================
+   INIT
+   ========================================================= */
+function renderAll() { renderInput(); renderDashboard(); }
+unitSel.value = state.unit; projIn.value = state.project || '';
+paintProject(); paintSwitch(); paintQtyMode(); buildSlicer(); save();
+if (!storageOK) document.getElementById('storageWarn').classList.add('show');
+renderAll();
+</script>
+</body>
+</html>
