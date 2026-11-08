@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Revenue Dashboard</title>
-<!-- GitHub repository entry point. Deploy this file as index.html. -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
 /* =========================================================
@@ -162,6 +161,198 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
 .rev-cell{font-weight:600}
 .warn{display:none;background:#FFF6E5;color:#7A5A00;padding:8px 14px;border-radius:999px;margin-bottom:10px;font-size:12px}
 .warn.show{display:block}
+
+
+
+/* ---------- V11: switches with text inside ---------- */
+.tswitch{position:relative;display:inline-grid;grid-template-columns:1fr 1fr;align-items:center;border:0;border-radius:999px;padding:3px;background:rgba(255,255,255,.15);cursor:pointer;font:inherit;font-size:11.5px;font-weight:700;flex:0 0 auto;user-select:none}
+.tswitch::before{content:"";position:absolute;top:3px;bottom:3px;left:3px;width:calc(50% - 3px);border-radius:999px;background:#fff;transition:transform .2s}
+.tswitch.on::before{transform:translateX(100%)}
+.tswitch span{position:relative;z-index:1;padding:4px 11px;text-align:center;color:#C9C1E6;transition:color .2s;white-space:nowrap}
+.tswitch span.act{color:var(--primary)}
+.tswitch.light,#moreMenu .tswitch{background:#E7E3F2}
+.tswitch.light::before,#moreMenu .tswitch::before{background:var(--primary)}
+.tswitch.light span,#moreMenu .tswitch span{color:var(--muted)}
+.tswitch.light span.act,#moreMenu .tswitch span.act{color:#fff}
+/* small light on/off switch (ROS YoY) */
+.switch.light{width:34px;height:20px;background:#DCD7EA}
+.switch.light::after{width:14px;height:14px;background:#fff}
+.switch.light.on{background:var(--primary)}
+.switch.light.on::after{transform:translateX(14px);background:#fff}
+.mix-tools{display:flex;align-items:center;gap:10px}
+.mini-sw{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
+/* Data input header */
+.proj .lab{font-weight:700;color:var(--text)}
+.qty-group{display:flex;align-items:center;gap:8px}
+.qty-h{font-size:12px;font-weight:700;color:var(--text)}
+/* swipe groups: transparent on desktop / landscape */
+.swipe{display:contents}
+.dots{display:none}
+#btnMore{display:none}
+#moreMenu{right:10px;width:250px;padding:10px 12px}
+.mm-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--line)}
+.mm-row:first-child{border-top:0}
+.mm-l{font-size:12px;font-weight:700;color:var(--text)}
+#moreMenu .unit-sel{background-color:var(--bg);color:var(--text);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%232E1A6B'/%3E%3C/svg%3E");font-size:12px}
+.mm-exp{display:flex;gap:6px}
+.mm-exp button{border:0;background:var(--tint2);color:#00636A;font:inherit;font-size:12px;font-weight:600;padding:6px 12px;border-radius:999px;cursor:pointer}
+
+/* =========================================================
+   V11 RESPONSIVE DRAFT
+   Phone portrait switches to a vertically stacked mobile view.
+   Phone landscape restores the desktop dashboard layout, scaled
+   to the available viewport with horizontal overflow only where needed.
+   ========================================================= */
+@media (max-width: 600px) and (orientation: portrait) {
+  html,body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto}
+  body{display:block;font-size:12px}
+
+  /* ---- Header: title + menu + settings / page tabs ---- */
+  header{position:sticky;top:0;z-index:25;height:auto;display:grid;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"title more set" "nav nav nav";gap:6px;padding:6px 10px 8px;align-items:center}
+  header h1{grid-area:title;font-size:15px;line-height:1.4;padding:1px 0}
+  header h1 #projTitle{font-size:12px}
+  .hdr-right{display:contents}
+  #nav{grid-area:nav}
+  #nav button{flex:1;padding:6px 8px;font-size:12px}
+  #btnMore{grid-area:more;display:grid}
+  #btnSettings{grid-area:set}
+  header #curSwitch,header #unitSel,header #btnExport{display:none}
+  .icon-btn{width:30px;height:30px}
+  .pop{position:fixed;top:84px;right:10px!important;max-width:calc(100vw - 20px)}
+
+  main{flex:none;height:auto;padding:8px 8px 16px;overflow:visible}
+  .page{height:auto}
+  #page-dashboard{gap:8px}
+  .filter-row{min-height:0;gap:6px;overflow-x:auto}
+  .yr{flex-wrap:nowrap}
+  .yr button{padding:4px 11px;font-size:11px;flex:none}
+
+  /* ---- Revenue cards: 4 lines (name+total / unit / type labels / values) ---- */
+  .cards{display:grid;grid-template-columns:1fr;gap:6px;overflow:visible;padding:0}
+  .card{flex:none;min-width:0;display:block;padding:8px 12px}
+  .card .left{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;align-items:center;border-left-width:3px;padding-left:8px}
+  .card .lg{grid-column:1;grid-row:1;font-size:13px;line-height:1.3}
+  .card .cur{grid-column:1;grid-row:2;font-size:9.5px;line-height:1.3}
+  .card .tot{grid-column:2;grid-row:1/3;font-size:18px}
+  .card .right{display:grid;grid-template-rows:auto auto;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);column-gap:8px;row-gap:0;margin-top:5px;padding-top:4px;border-top:1px solid var(--line);font-size:9.5px}
+  .card .right span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card .right span:nth-child(even){text-align:left;font-size:11.5px}
+  .card .dot{width:6px;height:6px;margin-right:4px}
+
+  /* ---- Swipe groups: charts / Benchmarking + Comparison ---- */
+  .quad{display:flex;flex-direction:column;flex:none;gap:2px}
+  .swipe{display:flex;align-items:flex-start;gap:10px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+  .swipe::-webkit-scrollbar{display:none}
+  .swipe>.panel{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always;padding:10px 12px;overflow:visible}
+  .dots{display:flex;justify-content:center;gap:6px;padding:5px 0 8px}
+  .dots i{width:6px;height:6px;border-radius:999px;background:#CFC9E3;cursor:pointer;transition:width .2s}
+  .dots i.on{width:16px;background:var(--primary)}
+  .chart-box{height:260px;flex:none}
+  .panel-head{flex-wrap:wrap;gap:6px;margin-bottom:6px}
+  .panel-head h2{font-size:13px}
+  .mix-tools{gap:8px;flex-wrap:wrap}
+  .mini-sw{font-size:10.5px}
+  .slicer{gap:4px}
+  .slicer button{padding:3px 8px;font-size:10px}
+  .mtx-head{height:auto}
+  .mtx.mobile-hidden{display:none}
+
+  /* ---- Benchmarking / Comparison cards: header + 3 lines ---- */
+  .mobile-matrix{display:grid;gap:6px}
+  .mc{background:#FBFAFD;border:1px solid var(--line);border-radius:10px;padding:7px 9px}
+  .mc-head{display:flex;align-items:center;gap:6px;font-weight:700;font-size:12px;margin-bottom:4px;min-width:0}
+  .mc-name{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mc-head select{flex:1;min-width:0;border:1px solid var(--line);border-radius:999px;padding:4px 8px;font:inherit;font-size:11.5px;font-weight:700;background:#fff;color:var(--text)}
+  .mc-head .sub{flex:none}
+  .mc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 10px}
+  .mc-cell{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0 4px;min-width:0;min-height:20px}
+  .mc-l{flex:1 1 40px;min-width:40px;font-size:9.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mc-v{flex:none;font-size:11px;font-weight:600;white-space:nowrap;margin-left:auto}
+  .mc-v .hi,.mc-v .lo,.mc-v .ball{padding:1px 6px;font-size:10px}
+
+  /* ---- Data Input: compact header + record cards (3 lines, labels inside fields) ---- */
+  #page-input .panel{flex:none;padding:10px;overflow:visible}
+  #page-input .panel>.panel-head{display:block;margin-bottom:6px}
+  .title-row{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center}
+  .proj{flex:1 1 100%}
+  .proj .inp{flex:1;width:auto;min-width:0}
+  .qty-group{flex:none;width:100%;min-width:0}
+  #fixedQtyWrap{flex:1 1 0;min-width:0;max-width:100%}
+  #fixedQty{width:100%;min-width:0}
+  #fixedQtyWrap .lab{display:none}
+  .actions{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:8px}
+  .actions .btn-soft,.actions .btn{font-size:10.5px;padding:7px 4px;text-align:center}
+  .warn{border-radius:12px;padding:6px 10px;font-size:11px}
+  #inputWrap{overflow:visible;margin-top:4px}
+  #inputTable,#inputTable tbody{display:block}
+  #inputTable thead{display:none}
+  #inputTable tbody{display:grid;gap:6px}
+  #inputTable tbody tr{display:grid;grid-template-columns:repeat(6,minmax(0,1fr)) 30px;gap:5px;border:1px solid var(--line);border-radius:12px;padding:6px;background:#fff}
+  #inputTable tbody tr:hover{background:#fff}
+  #inputTable tbody td{display:block;position:relative;padding:0;border:0;min-width:0;white-space:nowrap}
+  #inputTable tbody td::before{position:absolute;top:3px;left:11px;z-index:2;font-size:8px;line-height:1;color:var(--muted);font-weight:600;pointer-events:none}
+  #inputTable .inp{height:34px;padding:12px 9px 1px;font-size:12px;border-radius:10px}
+  #inputTable select.inp{padding:11px 4px 0 6px}
+  .combo .inp{padding-right:24px!important}
+  .combo-btn{width:20px;height:20px;right:2px}
+  .colour-cell{gap:4px}
+  .swatch{flex:0 0 10px;height:10px}
+  #inputTable tbody td:nth-child(1)::before{left:25px}
+  #inputTable tbody td:nth-child(2){order:1;grid-column:span 3}
+  #inputTable tbody td:nth-child(1){order:2;grid-column:span 3}
+  #inputTable tbody td:nth-child(8){order:3;grid-column:span 1;display:flex;align-items:center;justify-content:flex-end}
+  #inputTable tbody td:nth-child(3){order:4;grid-column:span 2}
+  #inputTable tbody td:nth-child(4){order:5;grid-column:span 2}
+  #inputTable tbody td:nth-child(5){order:6;grid-column:span 3}
+  #inputTable tbody td:nth-child(6){order:7;grid-column:span 3}
+  #inputTable tbody td:nth-child(7){order:8;grid-column:span 4}
+  #inputTable tbody td:nth-child(1)::before{content:'Colour'}
+  #inputTable tbody td:nth-child(2)::before{content:'Legend'}
+  #inputTable tbody td:nth-child(3)::before{content:'Type'}
+  #inputTable tbody td:nth-child(4)::before{content:'Year'}
+  #inputTable tbody td:nth-child(5)::before{content:'Price (THB)'}
+  #inputTable tbody td:nth-child(6)::before{content:'Quantity'}
+  #inputTable tbody td:nth-child(7)::before{content:'Revenue'}
+  #inputTable .rev-cell{height:34px;padding:13px 10px 0!important;background:var(--tint);border-radius:10px;text-align:right;color:var(--primary);font-weight:700;font-size:12.5px}
+  .del{width:30px;height:30px}
+  #legendMenu{max-width:calc(100vw - 20px)}
+}
+
+/* Phone landscape: use desktop-style dashboard and table, but make them fit
+   the shorter/wider viewport cleanly. */
+@media (max-height: 600px) and (orientation: landscape) {
+  html,body{height:100%;overflow:hidden}
+  header{flex:0 0 52px;padding:0 14px}
+  header h1{font-size:17px}
+  header h1 #projTitle{font-size:14px}
+  .hdr-right{gap:7px}
+  .seg button{padding:5px 10px;font-size:11px}
+  .tswitch{font-size:10px}.tswitch span{padding:3px 8px}
+  .unit-sel{font-size:11px;padding:5px 26px 5px 9px;max-width:108px}
+  .pill-btn{padding:6px 10px;font-size:11px}
+  .icon-btn{width:30px;height:30px}
+  main{padding:8px 12px 10px}
+  #page-dashboard{gap:6px}
+  .filter-row{min-height:22px}
+  .yr button{padding:3px 9px;font-size:10px}
+  .cards{gap:7px}
+  .card{min-width:205px;max-width:260px;padding:7px 10px}
+  .card .lg{font-size:12px}.card .tot{font-size:16px}.card .cur,.card .right{font-size:9.5px}
+  .quad{gap:7px}
+  .quad>.panel{padding:8px 10px}
+  .panel-head{margin-bottom:3px}.panel-head h2{font-size:12px}
+  .chart-box{min-height:0}
+  .mtx th{height:24px;font-size:9.5px}.mtx td{height:21px;font-size:9.5px}
+  .hi,.lo,.ball{padding:1px 6px}
+  #page-input .panel{padding:8px 10px}
+  .title-row{gap:8px}.actions{gap:5px}
+  .actions .btn-soft,.actions .btn{font-size:10px;padding:5px 8px}
+  #inputTable th{padding:5px;font-size:9px}#inputTable td{padding:4px 5px}
+  #inputTable .inp{padding:5px 8px;font-size:10px}
+  /* explicitly keep desktop table/matrix presentation in landscape */
+  .mobile-matrix{display:none!important}.mtx.mobile-hidden{display:table!important}
+}
+
 </style>
 </head>
 <body>
@@ -174,17 +365,16 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
       <button class="active" data-page="dashboard">Dashboard</button>
       <button data-page="input">Data Input</button>
     </div>
-    <div class="toggle">
-      <span class="lbl" id="lblTHB">THB</span>
-      <button class="switch" id="curSwitch" role="switch" aria-label="Currency THB / USD"></button>
-      <span class="lbl" id="lblUSD">USD</span>
-    </div>
+    <button class="tswitch" id="curSwitch" type="button" role="switch" aria-label="Currency THB / USD"><span>THB</span><span>USD</span></button>
     <select class="unit-sel" id="unitSel" aria-label="Units">
       <option value="none">No rounding</option>
       <option value="K">In thousands</option>
       <option value="M">In millions</option>
     </select>
     <button class="pill-btn no-export" id="btnExport">Export</button>
+    <button class="icon-btn no-export" id="btnMore" type="button" title="Menu" aria-label="Menu">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+    </button>
     <button class="icon-btn no-export" id="btnSettings" title="Settings" aria-label="Settings">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
@@ -200,6 +390,13 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
     <button class="btn-line" id="rateReset">Reset</button>
     <button class="btn" id="rateApply">Apply</button>
   </div>
+</div>
+
+<!-- Mobile portrait: hidden menu (currency, rounding, export) -->
+<div class="pop no-export" id="moreMenu">
+  <div class="mm-row"><span class="mm-l">Currency</span><div id="mmCur"></div></div>
+  <div class="mm-row"><span class="mm-l">Rounding</span><div id="mmUnit"></div></div>
+  <div class="mm-row"><span class="mm-l">Export</span><div class="mm-exp"><button type="button" data-mexp="pdf">PDF</button><button type="button" data-mexp="ppt">PowerPoint</button></div></div>
 </div>
 
 <!-- Export menu (dashboard screenshot) -->
@@ -222,6 +419,7 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
     <div class="cards" id="cards"></div>
 
     <div class="quad">
+      <div class="swipe" id="swCharts">
       <div class="panel">
         <div class="panel-head"><h2>ROS: Price vs Revenue</h2></div>
         <div class="chart-box"><canvas id="scatter"></canvas></div>
@@ -229,18 +427,26 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
       <div class="panel">
         <div class="panel-head">
           <h2>Revenue Mix</h2>
-          <div class="slicer" id="slicer"></div>
+          <div class="mix-tools">
+            <label class="mini-sw"><span>ROS YoY</span><button class="switch light" id="yoySwitch" type="button" role="switch" aria-label="Show ROS year-on-year growth"></button></label>
+            <div class="slicer" id="slicer"></div>
+          </div>
         </div>
         <div class="chart-box"><canvas id="stacked"></canvas></div>
       </div>
+      </div>
+      <div class="dots" id="dotsCharts"></div>
+      <div class="swipe" id="swMx">
       <div class="panel">
         <div class="panel-head mtx-head"><h2>Benchmarking</h2><span class="sub" id="benchSub"></span></div>
-        <div class="tbl-wrap"><table class="mtx" id="bench"></table></div>
+        <div class="tbl-wrap"><table class="mtx" id="bench"></table><div class="mobile-matrix" id="benchMobile"></div></div>
       </div>
       <div class="panel">
         <div class="panel-head mtx-head"><h2>Comparison</h2></div>
-        <div class="tbl-wrap"><table class="mtx cmp" id="cmp"></table></div>
+        <div class="tbl-wrap"><table class="mtx cmp" id="cmp"></table><div class="mobile-matrix" id="cmpMobile"></div></div>
       </div>
+      </div>
+      <div class="dots" id="dotsMx"></div>
     </div>
   </section>
 
@@ -250,14 +456,13 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
     <div class="panel">
       <div class="panel-head">
         <div class="title-row">
-          <div><h2>Data Input</h2><div class="sub">Prices in THB. Colour applies to all rows of the same Legend.</div></div>
+          <h2>Data Input</h2>
           <div class="proj"><span class="lab">Project Name</span><input id="projName" class="inp" placeholder="Enter project name" maxlength="80"></div>
-          <div class="qty-toggle">
-            <span class="lbl" id="lblVar">Variable qty</span>
-            <button class="switch" id="qtySwitch" role="switch" aria-label="Variable / Fixed quantity"></button>
-            <span class="lbl" id="lblFix">Fixed qty</span>
+          <div class="qty-group">
+            <span class="qty-h">Qty</span>
+            <button class="tswitch light" id="qtySwitch" type="button" role="switch" aria-label="Variable / Fixed quantity"><span>Variable</span><span>Fixed</span></button>
+            <div id="fixedQtyWrap"><input id="fixedQty" class="inp" inputmode="numeric" placeholder="Quantity"><span class="lab">tests</span></div>
           </div>
-          <div id="fixedQtyWrap"><input id="fixedQty" class="inp" inputmode="numeric" placeholder="Quantity"><span class="lab">tests</span></div>
         </div>
         <div class="actions">
           <button class="btn-soft" id="btnTemplate" type="button">Download Template</button>
@@ -297,10 +502,11 @@ const CATS = ['ROS', 'Instrument', 'Rental'];
 const CAT_COLOR = { ROS: '#2E1A6B', Instrument: '#00A3AD', Rental: '#8C6BD6' };   // company-theme colours per revenue type
 const NO_COLOUR = '#B9B5C8';
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+/* Legend colours: deliberately different from the ROS / Instrument / Rental colours above */
 const PALETTE = [
-  ['Indigo', '#2E1A6B'], ['Teal', '#00A3AD'], ['Purple', '#7B5CC4'], ['Blue', '#1F6FB2'],
-  ['Green', '#2E8B57'], ['Orange', '#D9822B'], ['Red', '#B42318'], ['Gold', '#B8913A'],
-  ['Pink', '#C2477F'], ['Grey', '#6B6B78']
+  ['Blue', '#1F6FB2'], ['Orange', '#D9822B'], ['Green', '#2E8B57'], ['Pink', '#C2477F'],
+  ['Gold', '#B8913A'], ['Red', '#B42318'], ['Sky', '#3FA7D6'], ['Brown', '#8B5E3C'],
+  ['Slate', '#5A6B7B'], ['Olive', '#7A8B2E']
 ];
 const UNIT = { none: { div: 1, tag: '' }, K: { div: 1e3, tag: " '000" }, M: { div: 1e6, tag: ' M' } };
 const THIS_YEAR = new Date().getFullYear();
@@ -322,7 +528,7 @@ let storageOK = true;
 const newRow = year => ({ legend: '', cat: 'ROS', year: year ?? THIS_YEAR, price: 0, qty: 0 });
 function load() {
   const def = { rows: [newRow()], colors: {}, currency: 'THB', rate: DEFAULT_RATE, unit: 'none',
-                qtyMode: 'variable', fixedQty: 0, cmp: [['', ''], ['', '']], project: '' };
+                qtyMode: 'variable', fixedQty: 0, cmp: [['', ''], ['', '']], project: '', yoy: false };
   try {
     const s = JSON.parse(localStorage.getItem(STORE_KEY));
     if (s && Array.isArray(s.rows)) { const m = { ...def, ...s }; if (!m.rows.length) m.rows.push(newRow()); return m; }
@@ -430,12 +636,33 @@ const sw = document.getElementById('curSwitch');
 function paintSwitch() {
   const usd = state.currency === 'USD';
   sw.classList.toggle('on', usd); sw.setAttribute('aria-checked', usd);
-  document.getElementById('lblTHB').classList.toggle('on', !usd);
-  document.getElementById('lblUSD').classList.toggle('on', usd);
+  sw.children[0].classList.toggle('act', !usd); sw.children[1].classList.toggle('act', usd);
 }
-sw.onclick = () => { state.currency = state.currency === 'USD' ? 'THB' : 'USD'; paintSwitch(); save(); renderAll(); };
-document.getElementById('lblTHB').onclick = () => { if (state.currency !== 'THB') sw.click(); };
-document.getElementById('lblUSD').onclick = () => { if (state.currency !== 'USD') sw.click(); };
+sw.onclick = e => { e.stopPropagation(); state.currency = state.currency === 'USD' ? 'THB' : 'USD'; paintSwitch(); save(); renderAll(); };
+
+/* ---------- Mobile portrait: hidden menu for currency / rounding / export ---------- */
+const PORTRAIT_MQ = window.matchMedia('(max-width: 600px) and (orientation: portrait)');
+const moreMenu = document.getElementById('moreMenu');
+function placeControls() {
+  const hr = document.querySelector('.hdr-right'), ex = document.getElementById('btnExport');
+  if (PORTRAIT_MQ.matches) {
+    document.getElementById('mmCur').appendChild(sw);
+    document.getElementById('mmUnit').appendChild(unitSel);
+  } else {
+    hr.insertBefore(sw, ex); hr.insertBefore(unitSel, ex);
+    moreMenu.classList.remove('open');
+  }
+}
+document.getElementById('btnMore').onclick = e => {
+  e.stopPropagation();
+  document.getElementById('settings').classList.remove('open');
+  moreMenu.classList.toggle('open');
+};
+moreMenu.querySelectorAll('[data-mexp]').forEach(b => b.onclick = () => {
+  moreMenu.classList.remove('open');
+  document.querySelector(`#exportMenu [data-exp="${b.dataset.mexp}"]`).click();
+});
+document.addEventListener('click', e => { if (!moreMenu.contains(e.target)) moreMenu.classList.remove('open'); });
 
 const setPop = document.getElementById('settings'), expPop = document.getElementById('exportMenu');
 const rateIn = document.getElementById('rate'), rateErr = document.getElementById('rateErr');
@@ -686,15 +913,12 @@ const qsw = document.getElementById('qtySwitch'), fqWrap = document.getElementBy
 function paintQtyMode() {
   const fixed = state.qtyMode === 'fixed';
   qsw.classList.toggle('on', fixed); qsw.setAttribute('aria-checked', fixed);
-  document.getElementById('lblVar').classList.toggle('on', !fixed);
-  document.getElementById('lblFix').classList.toggle('on', fixed);
+  qsw.children[0].classList.toggle('act', !fixed); qsw.children[1].classList.toggle('act', fixed);
   fqWrap.classList.toggle('show', fixed);
   fqIn.value = state.fixedQty ? fmt0(state.fixedQty) : '';
 }
 function setQtyMode(m) { state.qtyMode = m; paintQtyMode(); save(); renderAll(); if (m === 'fixed') fqIn.focus(); }
 qsw.onclick = () => setQtyMode(state.qtyMode === 'fixed' ? 'variable' : 'fixed');
-document.getElementById('lblVar').onclick = () => setQtyMode('variable');
-document.getElementById('lblFix').onclick = () => setQtyMode('fixed');
 bindQtyInput(fqIn, v => {
   state.fixedQty = v || 0; save();
   tbody.querySelectorAll('tr').forEach((tr, i) => {
@@ -832,9 +1056,22 @@ const stackLabels = {
         if (!groups.has(key)) groups.set(key, { x: bar.x, top: Infinity, tot: 0, year: ds.stack, w: bar.width });
         if (!v) return;
         const g = groups.get(key); g.tot += v; g.top = Math.min(g.top, bar.y);
-        const h = Math.abs(bar.base - bar.y), txt = fmt0(v);
-        ctx.font = FONT_R();
-        if (h >= 18 && ctx.measureText(txt).width < bar.width - 6) { ctx.fillStyle = '#fff'; ctx.fillText(txt, bar.x, (bar.y + bar.base) / 2); }
+        const h = Math.abs(bar.base - bar.y), txt = fmt0(v), mid = (bar.y + bar.base) / 2;
+        ctx.font = FONT_R(); ctx.fillStyle = '#fff';
+        /* Every segment: revenue value exactly as before.
+           ROS + YoY switch on: "▲ 0.0%" is added on a second line UNDER the value (no colour scale). */
+        const fitV = h >= 18 && ctx.measureText(txt).width < bar.width - 6;
+        const g2 = state.yoy && ds.cat === 'ROS' && ds.yoy ? ds.yoy[i] : null;
+        if (g2 != null && fitV) {
+          const yt = (g2 > 0 ? '▲ ' : g2 < 0 ? '▼ ' : '– ') + Math.abs(g2).toFixed(1) + '%';
+          if (h >= 30 && ctx.measureText(yt).width < bar.width - 4) {
+            ctx.fillText(txt, bar.x, mid - 6);
+            ctx.font = '500 9px ' + css('--font');
+            ctx.fillText(yt, bar.x, mid + 7);
+            return;
+          }
+        }
+        if (fitV) ctx.fillText(txt, bar.x, mid);
       });
     });
     groups.forEach(g => {
@@ -851,6 +1088,10 @@ const stackLabels = {
 /* =========================================================
    DASHBOARD
    ========================================================= */
+const yoySw = document.getElementById('yoySwitch');
+function paintYoy() { yoySw.classList.toggle('on', !!state.yoy); yoySw.setAttribute('aria-checked', !!state.yoy); }
+document.querySelector('.mini-sw').onclick = e => { e.preventDefault(); state.yoy = !state.yoy; paintYoy(); save(); renderDashboard(); };
+
 function buildSlicer() {
   const s = document.getElementById('slicer');
   s.innerHTML = CATS.map(c => `<button data-cat="${c}" class="${slicerSel.has(c) ? 'on' : ''}"><i class="dot" style="background:${CAT_COLOR[c]}"></i>${c}</button>`).join('');
@@ -955,9 +1196,24 @@ function renderDashboard() {
   const topK = {};
   years.forEach(y => topK[y] = names.map(n => { let t = -1; sel.forEach((c, k) => { if (val(n, y, c) > 0) t = k; }); return t; }));
 
+  /* ROS YoY: vs the previous year in the data (all years, not only the selected ones) */
+  const allYs = allYears(), rosAll = {};
+  state.rows.forEach(r => {
+    if (!r.legend.trim() || r.cat !== 'ROS' || !validYear(r.year)) return;
+    const n = r.legend.trim(), y = String(r.year);
+    (rosAll[n] ??= {})[y] = (rosAll[n][y] || 0) + revenue(r);
+  });
+  const yoyOf = (n, y) => {
+    const p = allYs[allYs.indexOf(y) - 1];
+    if (y === 'N/A' || !p || p === 'N/A') return null;
+    const cur = rosAll[n]?.[y] || 0, prev = rosAll[n]?.[p] || 0;
+    return prev ? (cur - prev) / prev * 100 : null;
+  };
+
   const datasets = [];
   years.forEach(y => sel.forEach((c, k) => datasets.push({
     label: `${c} ${y}`, stack: y, cat: c,
+    yoy: c === 'ROS' ? names.map(n => yoyOf(n, y)) : null,
     data: names.map(n => rev(val(n, y, c))),
     backgroundColor: CAT_COLOR[c], borderSkipped: false,
     borderRadius: ctx => topK[y][ctx.dataIndex] === k ? { topLeft: 8, topRight: 8, bottomLeft: 0, bottomRight: 0 } : 0,
@@ -986,11 +1242,61 @@ function renderDashboard() {
   renderCompare(data);
 }
 
+
+function isPhonePortrait(){ return window.matchMedia('(max-width: 600px) and (orientation: portrait)').matches; }
+const MX_SHORT = ['ROS Qty', 'ROS Price', 'ROS Rev', 'Instr Rev', 'Rental Rev', 'Total Rev'];
+function renderBenchMobile(data) {
+  const box = document.getElementById('benchMobile'), table = document.getElementById('bench');
+  if (!isPhonePortrait()) { box.innerHTML = ''; table.classList.remove('mobile-hidden'); return; }
+  table.classList.add('mobile-hidden');
+  if (!data.length) { box.innerHTML = '<div class="empty">No data</div>'; return; }
+  const ext = ATTRS.map(at => { const vs = data.map(at.val), mx = Math.max(...vs), mn = Math.min(...vs); return { mx, mn, scale: data.length > 1 && mx !== mn }; });
+  box.innerHTML = data.map(a => `
+    <div class="mc">
+      <div class="mc-head"><i class="dot" style="background:${a.color}"></i><span class="mc-name">${esc(a.legend)}</span></div>
+      <div class="mc-grid">${ATTRS.map((at, i) => {
+        const v = at.val(a), e = ext[i], c = e.scale && v === e.mx ? 'hi' : e.scale && v === e.mn ? 'lo' : '', t = fmt(v, at.dec);
+        return `<div class="mc-cell"><span class="mc-l">${MX_SHORT[i]}</span><span class="mc-v">${c ? `<span class="${c}">${t}</span>` : t}</span></div>`;
+      }).join('')}</div>
+    </div>`).join('');
+}
+function renderCompareMobile(data) {
+  const box = document.getElementById('cmpMobile'), table = document.getElementById('cmp');
+  if (!isPhonePortrait()) { box.innerHTML = ''; table.classList.remove('mobile-hidden'); return; }
+  table.classList.add('mobile-hidden');
+  if (data.length < 2) { box.innerHTML = '<div class="empty">Add at least 2 legends to compare</div>'; return; }
+  const names = data.map(a => a.legend), pair = state.cmp[0];          // mobile: 1 comparison bucket only
+  const byName = n => data.find(a => a.legend === n);
+  const opts = cur => names.map(n => `<option ${n === cur ? 'selected' : ''}>${esc(n)}</option>`).join('');
+  const cell = at => {
+    const X = at.val(byName(pair[0])), Y = at.val(byName(pair[1])), d = X - Y, v = fmt(Math.abs(d), at.dec);
+    if (Math.abs(d) < 1e-9) return `<span class="ball flat">– ${v} | 0%</span>`;
+    const pct = Y ? `${d > 0 ? '+' : '-'}${fmt0(Math.abs(d / Y * 100))}%` : 'n/a';
+    return d > 0 ? `<span class="ball up">▲ ${v} | ${pct}</span>` : `<span class="ball down">▼ ${v} | ${pct}</span>`;
+  };
+  box.innerHTML = `
+    <div class="mc">
+      <div class="mc-head"><select data-s="0">${opts(pair[0])}</select><span class="sub">vs</span><select data-s="1">${opts(pair[1])}</select></div>
+      <div class="mc-grid">${ATTRS.map((at, i) => `<div class="mc-cell"><span class="mc-l">${MX_SHORT[i]}</span><span class="mc-v">${cell(at)}</span></div>`).join('')}</div>
+    </div>`;
+  box.querySelectorAll('select').forEach(sel => sel.onchange = () => { state.cmp[0][+sel.dataset.s] = sel.value; save(); renderCompare(aggregate()); });
+}
+
+/* ----- Swipe dots (mobile portrait) ----- */
+function setupSwipe(swId, dotsId) {
+  const sc = document.getElementById(swId), dots = document.getElementById(dotsId), n = sc.children.length;
+  dots.innerHTML = Array.from({ length: n }, (_, i) => `<i data-i="${i}" class="${i ? '' : 'on'}"></i>`).join('');
+  const step = () => sc.clientWidth + 10;
+  const paint = () => { const k = Math.round(sc.scrollLeft / step()); dots.querySelectorAll('i').forEach((d, i) => d.classList.toggle('on', i === k)); };
+  sc.addEventListener('scroll', () => requestAnimationFrame(paint), { passive: true });
+  dots.querySelectorAll('i').forEach(d => d.onclick = () => sc.scrollTo({ left: +d.dataset.i * step(), behavior: 'smooth' }));
+}
+
 /* ----- Benchmarking ----- */
 function renderBench(data, U) {
   document.getElementById('benchSub').textContent = `Revenue in ${U}`;
   const t = document.getElementById('bench');
-  if (!data.length) { t.innerHTML = '<tbody><tr><td class="empty">No data</td></tr></tbody>'; return; }
+  if (!data.length) { t.innerHTML = '<tbody><tr><td class="empty">No data</td></tr></tbody>'; renderBenchMobile(data); return; }
   t.innerHTML = `
     <thead><tr><th></th>${data.map(a => `<th class="num"><i class="dot" style="background:${a.color}"></i>${esc(a.legend)}</th>`).join('')}</tr></thead>
     <tbody>${ATTRS.map(at => {
@@ -1001,12 +1307,13 @@ function renderBench(data, U) {
         return `<td class="num">${c ? `<span class="${c}">${txt}</span>` : txt}</td>`;
       }).join('')}</tr>`;
     }).join('')}</tbody>`;
+  renderBenchMobile(data);
 }
 
 /* ----- Comparison ----- */
 function renderCompare(data) {
   const t = document.getElementById('cmp');
-  if (data.length < 2) { t.innerHTML = '<tbody><tr><td class="empty">Add at least 2 legends to compare</td></tr></tbody>'; return; }
+  if (data.length < 2) { t.innerHTML = '<tbody><tr><td class="empty">Add at least 2 legends to compare</td></tr></tbody>'; renderCompareMobile(data); return; }
   const names = data.map(a => a.legend);
   if (!Array.isArray(state.cmp) || state.cmp.length !== 2) state.cmp = [['', ''], ['', '']];
   state.cmp.forEach((p, k) => {
@@ -1029,6 +1336,7 @@ function renderCompare(data) {
   t.querySelectorAll('select').forEach(s => s.onchange = () => {
     state.cmp[+s.dataset.c][+s.dataset.s] = s.value; save(); renderCompare(aggregate());
   });
+  renderCompareMobile(data);
 }
 
 /* =========================================================
@@ -1036,9 +1344,13 @@ function renderCompare(data) {
    ========================================================= */
 function renderAll() { renderInput(); renderDashboard(); }
 unitSel.value = state.unit; projIn.value = state.project || '';
-paintProject(); paintSwitch(); paintQtyMode(); buildSlicer(); save();
+paintProject(); paintSwitch(); paintQtyMode(); paintYoy(); buildSlicer(); placeControls(); save();
+setupSwipe('swCharts', 'dotsCharts'); setupSwipe('swMx', 'dotsMx');
+PORTRAIT_MQ.addEventListener('change', () => { placeControls(); renderDashboard(); });
 if (!storageOK) document.getElementById('storageWarn').classList.add('show');
 renderAll();
+let responsiveTimer;
+window.addEventListener('resize',()=>{clearTimeout(responsiveTimer);responsiveTimer=setTimeout(()=>{if(document.getElementById('page-dashboard').classList.contains('active')) renderDashboard();},180)});
 </script>
 </body>
 </html>
