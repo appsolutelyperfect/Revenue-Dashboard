@@ -353,7 +353,8 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
   #fixedQty{width:100%;min-width:0}
   #fixedQtyWrap .lab{display:none}
   .actions{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:8px}
-  .actions .btn-soft,.actions .btn{font-size:10.5px;padding:7px 4px;text-align:center}
+  .actions .btn-soft,.actions .btn{font-size:10.5px;padding:7px 3px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #btnClear{font-size:9.5px}
   .warn{border-radius:12px;padding:6px 10px;font-size:11px}
   #inputWrap{overflow:visible;margin-top:4px}
   #inputTable,#inputTable tbody{display:block}
@@ -571,12 +572,12 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
           </div>
         </div>
         <div class="actions">
+          <button class="btn-soft" id="btnFilter" type="button">Filter</button>
           <button class="btn-soft desk-only" id="btnTemplate" type="button">Download Template</button>
           <button class="btn-soft teal desk-only" id="btnImport" type="button">Import Excel</button>
           <button class="btn-soft teal desk-only" id="btnExportData" type="button">Export Data</button>
           <button class="btn-soft teal mob-only" id="btnFileMenu" type="button">Data &#9662;</button>
-          <button class="btn-soft" id="btnFilter" type="button">Filter</button>
-          <button class="btn-soft danger" id="btnClear" type="button">Clear All</button>
+          <button class="btn-soft danger" id="btnClear" type="button">Clear All Data</button>
           <button class="btn" id="addRow" type="button">+ Add Row</button>
           <input type="file" id="importFile" accept=".xlsx,.xls,.csv" hidden>
         </div>
@@ -866,7 +867,7 @@ expPop.querySelectorAll('button').forEach(b => b.onclick = async () => {
    EXCEL: template / export (ExcelJS: colours, dropdown, formula)
           import (SheetJS: reads Legend..Quantity only)
    ========================================================= */
-const XL = { head: 'FF2E1A6B', headFont: 'FFFFFFFF', band1: 'FFFFFFFF', band2: 'FFF5F4F9', calc: 'FFE6F6F7', calcFont: 'FF00636A', border: 'FFDCD7EA' };
+const XL = { head: 'FF2E1A6B', headFont: 'FFFFFFFF', input: 'FFFFF9D6', calc: 'FFE6F6F7', calcFont: 'FF00636A', border: 'FFD0D0D8' };   // input = light yellow, border = light grey
 const xfill = argb => ({ type: 'pattern', pattern: 'solid', fgColor: { argb } });
 const thin = { style: 'thin', color: { argb: XL.border } };
 const box = { top: thin, left: thin, bottom: thin, right: thin };
@@ -875,15 +876,18 @@ const box = { top: thin, left: thin, bottom: thin, right: thin };
 async function buildWorkbook(rows, blankRows) {
   await loadScript(LIBS.exceljs);
   const wb = new ExcelJS.Workbook(); wb.creator = 'Revenue Dashboard';
-  const ws = wb.addWorksheet('Data', { views: [{ state: 'frozen', ySplit: HDR_ROW }] });
+  const ws = wb.addWorksheet('Data', { views: [{ state: 'frozen', ySplit: HDR_ROW, showGridLines: false }] });   // sheet gridlines off; only the table has light grey borders
   ws.columns = [{ width: 26 }, { width: 16 }, { width: 10 }, { width: 18 }, { width: 18 }, { width: 22 }];
 
   /* Row 1: Project Name (imported back into the app) */
   const pl = ws.getCell('A1'), pv = ws.getCell('B1');
   pl.value = 'Project Name'; pl.font = { bold: true, color: { argb: XL.headFont } }; pl.fill = xfill(XL.head); pl.border = box;
   pl.alignment = { vertical: 'middle' };
+  /* blank + light yellow in the template; Export Data keeps the current Project Name */
+  pv.value = (rows.length && (state.project || '').trim()) ? (state.project || '').trim() : null;
+  pv.font = { bold: true }; pv.fill = xfill(XL.input); pv.border = box; pv.alignment = { vertical: 'middle' };
+  for (const c of ['C1', 'D1', 'E1', 'F1']) { ws.getCell(c).fill = xfill(XL.input); ws.getCell(c).border = box; }
   ws.mergeCells('B1:F1');
-  pv.value = (state.project || '').trim() || null; pv.font = { bold: true }; pv.border = box; pv.alignment = { vertical: 'middle' };
   ws.getRow(1).height = 22;
 
   const h = ws.getRow(HDR_ROW); h.values = XL_HEAD; h.height = 24;
@@ -905,11 +909,10 @@ async function buildWorkbook(rows, blankRows) {
     } else {
       row.getCell(6).value = { formula: `IF(OR(D${R}="",E${R}=""),"",D${R}*E${R})` };
     }
-    const band = i % 2 ? XL.band2 : XL.band1;
     for (let c = 1; c <= 6; c++) {
       const cell = row.getCell(c);
       cell.border = box;
-      cell.fill = xfill(c === 6 ? XL.calc : band);
+      cell.fill = xfill(c === 6 ? XL.calc : XL.input);        // non-formula input cells: light yellow
       if (c === 6) cell.font = { bold: true, color: { argb: XL.calcFont } };
       if (c === 2 || c === 3) cell.alignment = { horizontal: 'center' };
       if (c === 3) cell.numFmt = '0';
@@ -932,7 +935,7 @@ async function buildWorkbook(rows, blankRows) {
   ins.columns = [{ width: 95 }];
   [
     'How to fill in this template',
-    '1. Enter the Project Name in cell B1, then fill in Legend, Category, Year, Price (THB) and Quantity (Test) on the "Data" sheet (white/grey cells).',
+    '1. Enter the Project Name in cell B1, then fill in Legend, Category, Year, Price (THB) and Quantity (Test) on the "Data" sheet (light yellow cells).',
     '2. Select Category from the dropdown: ROS, Instrument or Rental.',
     '3. Year can be any whole number of 1 or more, e.g. 1, 2, 3, 4 or 2025, 2026, 2027.',
     '4. Rental quantity is always imported as 1.',
@@ -1011,10 +1014,12 @@ importFile.onchange = e => {
   }, LIBS.xlsx);
 };
 
-/* Clear all data (rows + colours). Project name, currency and rate are kept. */
+/* Clear All Data: rows, Legend colours and the Project Name. Currency, rounding and USD rate are kept. */
 document.getElementById('btnClear').onclick = () => {
-  if (!confirm('Clear all data rows and Legend colours?\nThis cannot be undone. Export your data first if you need a copy.')) return;
-  state.rows = [newRow()]; state.colors = {}; state.cmp = [['', ''], ['', '']]; yearSel = null;
+  if (!confirm('Clear All Data?\nThis removes all data rows, Legend colours and the Project Name.\nThis cannot be undone. Export your data first if you need a copy.')) return;
+  state.rows = [newRow()]; state.colors = {}; state.cmp = [['', ''], ['', '']]; state.trendLegend = ''; yearSel = null;
+  state.project = ''; projIn.value = ''; paintProject();
+  clearFilters();
   save(); renderAll(); toast('All data cleared.');
 };
 
