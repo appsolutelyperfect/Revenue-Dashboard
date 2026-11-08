@@ -39,6 +39,11 @@ header h1 #projTitle{font-size:16px;font-weight:400;color:#D9D4EC;line-height:1.
 .unit-sel{appearance:none;-webkit-appearance:none;background:rgba(255,255,255,.12) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23fff'/%3E%3C/svg%3E") no-repeat right 12px center;
   color:#fff;border:0;border-radius:999px;padding:6px 30px 6px 14px;font:inherit;cursor:pointer}
 .unit-sel option{color:var(--text)}
+/* 3-value rounding toggle (PC / landscape) */
+.useg{display:inline-flex;background:rgba(255,255,255,.15);border-radius:999px;padding:3px;flex:0 0 auto}
+.useg button{border:0;background:transparent;color:#C9C1E6;font:inherit;font-size:11.5px;font-weight:700;padding:4px 11px;border-radius:999px;cursor:pointer;white-space:nowrap;transition:.2s}
+.useg button.act{background:#fff;color:var(--primary)}
+header #unitSel{display:none}
 .icon-btn{border:0;background:rgba(255,255,255,.12);width:34px;height:34px;border-radius:50%;cursor:pointer;color:#fff;display:grid;place-items:center}
 .icon-btn:hover{background:rgba(255,255,255,.22)}
 .pill-btn{border:0;background:var(--accent);color:#fff;font:inherit;font-weight:600;padding:7px 16px;border-radius:999px;cursor:pointer;white-space:nowrap}
@@ -76,6 +81,7 @@ header h1 #projTitle{font-size:16px;font-weight:400;color:#D9D4EC;line-height:1.
 .btn-soft.danger:hover{background:#FAD5D1}
 .panel{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;display:flex;flex-direction:column;min-height:0;min-width:0}
 .panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;flex:0 0 auto}
+.swipe .panel-head{min-height:30px}
 .panel-head h2{font-size:14px;font-weight:600;margin:0}
 .sub{color:var(--muted);font-size:11.5px}
 .empty{color:var(--muted);text-align:center;margin:auto;padding:10px}
@@ -101,6 +107,7 @@ main{flex:1 1 auto;min-height:0;padding:12px 24px 14px}
 .card .right{flex:0 0 auto;display:grid;grid-template-columns:auto auto;column-gap:10px;row-gap:2px;font-size:11.5px}
 .card .right span:nth-child(odd){color:var(--muted)}
 .card .right span:nth-child(even){text-align:right;font-weight:600}
+.card .right b{font-weight:inherit}.card .right .ls{display:none}
 
 /* 2 x 2 quadrants with equal height and width */
 .quad{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:12px}
@@ -197,6 +204,66 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
 .mm-exp{display:flex;gap:6px}
 .mm-exp button{border:0;background:var(--tint2);color:#00636A;font:inherit;font-size:12px;font-weight:600;padding:6px 12px;border-radius:999px;cursor:pointer}
 
+
+/* ---------- V11 D5: data file menu, filters ---------- */
+#fileMenu{position:fixed;width:210px;padding:6px}
+#fileMenu button{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;padding:9px 12px;border-radius:10px;cursor:pointer;color:var(--text)}
+#fileMenu button:hover{background:var(--tint);color:var(--primary)}
+.btn-soft.on{background:var(--primary);color:#fff}
+#inputTable .frow{display:none}
+#inputTable.filtering .frow{display:table-row}
+#inputTable .frow th{padding:4px 6px 8px;top:33px;background:#FBFAFD}
+#inputTable .frow .inp{padding:5px 10px;font-size:11.5px;font-weight:400}
+#fltClear{border:0;background:var(--bad-bg);color:var(--bad);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:15px;line-height:1}
+#legendMenu .opt.cur{background:var(--tint);color:var(--primary);font-weight:700}
+/* D6: Data buttons - separate on desktop / landscape, one 'Data' menu on phone portrait */
+.mob-only{display:none}
+/* D6: multi-select filter dropdowns */
+.msel{display:flex;align-items:center;justify-content:space-between;gap:6px;cursor:pointer;text-align:left;min-width:0}
+.msel .ms-t{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+.msel.act{border-color:var(--secondary)}
+.msel.act .ms-t{color:var(--primary);font-weight:600}
+.msel .ms-c{flex:none;font-size:9px;color:var(--muted)}
+.msel .dot{width:7px;height:7px;margin-right:3px}
+#mselPop{display:none;position:fixed;z-index:45;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(46,26,107,.16);padding:6px;max-height:300px;overflow:auto;font-size:12px}
+#mselPop.open{display:block}
+#mselPop .ms-q{margin-bottom:5px;padding:6px 10px;font-size:12px}
+.ms-bar{display:flex;justify-content:space-between;padding:0 4px 4px;border-bottom:1px solid var(--line);margin-bottom:3px}
+.ms-bar button{border:0;background:none;color:var(--secondary);font:inherit;font-size:11px;font-weight:600;cursor:pointer;padding:3px 2px}
+.ms-o{display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:8px;cursor:pointer;white-space:nowrap}
+.ms-o:hover{background:var(--tint)}
+.ms-o input{accent-color:var(--primary);margin:0;flex:none}
+.ms-o span{overflow:hidden;text-overflow:ellipsis}
+.ms-o .dot{margin-right:0;flex:none}
+.ms-none{padding:8px;color:var(--muted)}
+
+/* D7: Benchmarking / Trending header */
+.mx-tools{display:flex;align-items:center;gap:8px;min-width:0}
+#mxSwitch{font-size:11.5px}
+#mxSwitch span{padding:4px 10px}
+.pick{display:none;align-items:center;gap:6px;border:1px solid var(--line);background:var(--tint);color:var(--text);font:inherit;font-size:12px;font-weight:700;border-radius:999px;padding:4px 10px;cursor:pointer;max-width:170px;min-width:0}
+.pick.show{display:inline-flex}
+.pick .pk-t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pick .pk-c{font-size:9px;color:var(--muted)}
+.pick .dot{margin-right:0;flex:none}
+#pickPop{display:none;position:fixed;z-index:45;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(46,26,107,.16);padding:4px;max-height:260px;overflow:auto;font-size:12px}
+#pickPop.open{display:block}
+#pickPop .pk-o{display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:8px;cursor:pointer;white-space:nowrap}
+#pickPop .pk-o:hover{background:var(--tint)}
+#pickPop .pk-o.cur{background:var(--tint);color:var(--primary);font-weight:700}
+#pickPop .dot{margin-right:0;flex:none}
+/* Trending growth balloon */
+.gr{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:999px;font-variant-numeric:tabular-nums}
+.gr.up{background:var(--good-bg);color:var(--good)}
+.gr.down{background:var(--bad-bg);color:var(--bad)}
+.gr.flat{background:var(--bg);color:var(--muted)}
+.mtx.trend tr:last-child td{font-weight:700}
+/* D9: Positioning header with two light dropdowns */
+.pos-head{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap}
+.pos-head h2{margin:0}
+.pos-head select{border:1px solid #E2DDF0;border-radius:999px;padding:3px 10px;height:26px;font:inherit;font-weight:700;color:var(--primary);background:var(--tint);cursor:pointer;min-width:0}
+/* D7: Comparison dropdowns - light background */
+.cmp select{background:var(--tint)!important;border-color:#E2DDF0!important;color:var(--primary)}
 /* =========================================================
    V11 RESPONSIVE DRAFT
    Phone portrait switches to a vertically stacked mobile view.
@@ -208,7 +275,7 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
   body{display:block;font-size:12px}
 
   /* ---- Header: title + menu + settings / page tabs ---- */
-  header{position:sticky;top:0;z-index:25;height:auto;display:grid;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"title more set" "nav nav nav";gap:6px;padding:6px 10px 8px;align-items:center}
+  header{position:fixed;top:0;left:0;right:0;z-index:25;height:auto;display:grid;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"title more set" "nav nav nav";gap:6px;padding:6px 10px 8px;align-items:center}
   header h1{grid-area:title;font-size:15px;line-height:1.4;padding:1px 0}
   header h1 #projTitle{font-size:12px}
   .hdr-right{display:contents}
@@ -216,28 +283,30 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
   #nav button{flex:1;padding:6px 8px;font-size:12px}
   #btnMore{grid-area:more;display:grid}
   #btnSettings{grid-area:set}
-  header #curSwitch,header #unitSel,header #btnExport{display:none}
+  header #curSwitch,header #unitSel,header #unitSeg{display:none}
   .icon-btn{width:30px;height:30px}
-  .pop{position:fixed;top:84px;right:10px!important;max-width:calc(100vw - 20px)}
+  .pop{position:fixed;top:calc(var(--hdrH,84px) + 4px);right:10px!important;max-width:calc(100vw - 20px)}
 
-  main{flex:none;height:auto;padding:8px 8px 16px;overflow:visible}
+  main{flex:none;height:auto;padding:calc(var(--hdrH,84px) + 8px) 8px 16px;overflow:visible}
   .page{height:auto}
   #page-dashboard{gap:8px}
   .filter-row{min-height:0;gap:6px;overflow-x:auto}
   .yr{flex-wrap:nowrap}
   .yr button{padding:4px 11px;font-size:11px;flex:none}
 
-  /* ---- Revenue cards: 4 lines (name+total / unit / type labels / values) ---- */
-  .cards{display:grid;grid-template-columns:1fr;gap:6px;overflow:visible;padding:0}
-  .card{flex:none;min-width:0;display:block;padding:8px 12px}
-  .card .left{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;align-items:center;border-left-width:3px;padding-left:8px}
-  .card .lg{grid-column:1;grid-row:1;font-size:13px;line-height:1.3}
-  .card .cur{grid-column:1;grid-row:2;font-size:9.5px;line-height:1.3}
-  .card .tot{grid-column:2;grid-row:1/3;font-size:18px}
-  .card .right{display:grid;grid-template-rows:auto auto;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);column-gap:8px;row-gap:0;margin-top:5px;padding-top:4px;border-top:1px solid var(--line);font-size:9.5px}
-  .card .right span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .card .right span:nth-child(even){text-align:left;font-size:11.5px}
-  .card .dot{width:6px;height:6px;margin-right:4px}
+  /* ---- Revenue cards: same layout as normal view (total left, breakdown right), 2 per row ---- */
+  .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;overflow:visible;padding:0}
+  .card{flex:none;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:8px 8px 8px 9px}
+  .card .left{min-width:0;flex:1 1 auto;border-left-width:3px;padding-left:6px}
+  .card .lg{font-size:11.5px;line-height:1.3}
+  .card .tot{font-size:13px;line-height:1.25;overflow:hidden;text-overflow:ellipsis}
+  .card .tot.lg2{font-size:11.5px}.card .tot.xl{font-size:10px}
+  .card .right .lf{display:none}.card .right .ls{display:inline}
+  .card .cur{font-size:8px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card .right{flex:0 0 auto;display:grid;grid-template-columns:auto auto;column-gap:4px;row-gap:1px;font-size:8.5px}
+  .card{gap:4px}
+  .card .right span:nth-child(even){text-align:right}
+  .card .dot{width:5px;height:5px;margin-right:3px}
 
   /* ---- Swipe groups: charts / Benchmarking + Comparison ---- */
   .quad{display:flex;flex-direction:column;flex:none;gap:2px}
@@ -262,7 +331,10 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
   .mc{background:#FBFAFD;border:1px solid var(--line);border-radius:10px;padding:7px 9px}
   .mc-head{display:flex;align-items:center;gap:6px;font-weight:700;font-size:12px;margin-bottom:4px;min-width:0}
   .mc-name{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .mc-head select{flex:1;min-width:0;border:1px solid var(--line);border-radius:999px;padding:4px 8px;font:inherit;font-size:11.5px;font-weight:700;background:#fff;color:var(--text)}
+  .mc-head select{flex:1;min-width:0;border:1px solid #E2DDF0;border-radius:999px;padding:4px 8px;font:inherit;font-size:11.5px;font-weight:700;background:var(--tint);color:var(--primary)}
+  .mx-tools{flex-wrap:wrap}
+  #mxSwitch{font-size:10.5px}#mxSwitch span{padding:3px 8px}
+  .mc .gr{font-size:9.5px;padding:1px 5px;margin-left:4px}
   .mc-head .sub{flex:none}
   .mc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 10px}
   .mc-cell{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0 4px;min-width:0;min-height:20px}
@@ -316,7 +388,22 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
   #inputTable .rev-cell{height:34px;padding:13px 10px 0!important;background:var(--tint);border-radius:10px;text-align:right;color:var(--primary);font-weight:700;font-size:12.5px}
   .del{width:30px;height:30px}
   #legendMenu{max-width:calc(100vw - 20px)}
+
+  /* ---- D5: data input cards show the Legend colour on the left ---- */
+  #inputTable tbody tr{border-left:5px solid var(--lc,var(--line))}
+  /* ---- D5: filters shown as a 2-column card above the records ---- */
+  #inputTable.filtering thead{display:block;margin-bottom:6px}
+  #inputTable.filtering thead tr:first-child{display:none}
+  #inputTable.filtering .frow{display:grid;grid-template-columns:1fr 1fr;gap:5px;background:#FBFAFD;border:1px solid var(--line);border-radius:12px;padding:6px}
+  #inputTable .frow th{display:block;padding:0;position:static;background:none;border:0}
+  #inputTable .frow th:nth-child(2){grid-column:1/-1;order:-1}
+  #inputTable .frow th:last-child{grid-column:1/-1;text-align:right}
+  #fltClear{width:auto;height:28px;border-radius:999px;padding:0 12px;font-size:11px;font-weight:600}
+  .actions{grid-template-columns:repeat(4,1fr)}
+  .desk-only{display:none!important}.mob-only{display:inline-block}
+  #inputTable .msel{height:34px;padding:0 10px;font-size:11.5px;border-radius:10px}
 }
+
 
 /* Phone landscape: use desktop-style dashboard and table, but make them fit
    the shorter/wider viewport cleanly. */
@@ -328,7 +415,9 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
   .hdr-right{gap:7px}
   .seg button{padding:5px 10px;font-size:11px}
   .tswitch{font-size:10px}.tswitch span{padding:3px 8px}
+  #mxSwitch span{padding:2px 7px}.pick{font-size:10px;padding:2px 8px}.gr{font-size:9px;padding:0 5px}
   .unit-sel{font-size:11px;padding:5px 26px 5px 9px;max-width:108px}
+  .useg button{font-size:10px;padding:3px 8px}
   .pill-btn{padding:6px 10px;font-size:11px}
   .icon-btn{width:30px;height:30px}
   main{padding:8px 12px 10px}
@@ -366,12 +455,16 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
       <button data-page="input">Data Input</button>
     </div>
     <button class="tswitch" id="curSwitch" type="button" role="switch" aria-label="Currency THB / USD"><span>THB</span><span>USD</span></button>
+    <div class="useg" id="unitSeg" role="radiogroup" aria-label="Rounding">
+      <button type="button" data-unit="none">No rounding</button>
+      <button type="button" data-unit="K">Thousands</button>
+      <button type="button" data-unit="M">Millions</button>
+    </div>
     <select class="unit-sel" id="unitSel" aria-label="Units">
       <option value="none">No rounding</option>
       <option value="K">In thousands</option>
       <option value="M">In millions</option>
     </select>
-    <button class="pill-btn no-export" id="btnExport">Export</button>
     <button class="icon-btn no-export" id="btnMore" type="button" title="Menu" aria-label="Menu">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
     </button>
@@ -396,7 +489,6 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
 <div class="pop no-export" id="moreMenu">
   <div class="mm-row"><span class="mm-l">Currency</span><div id="mmCur"></div></div>
   <div class="mm-row"><span class="mm-l">Rounding</span><div id="mmUnit"></div></div>
-  <div class="mm-row"><span class="mm-l">Export</span><div class="mm-exp"><button type="button" data-mexp="pdf">PDF</button><button type="button" data-mexp="ppt">PowerPoint</button></div></div>
 </div>
 
 <!-- Export menu (dashboard screenshot) -->
@@ -407,6 +499,14 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
 <div id="busy" class="no-export">Preparing…</div>
 <div id="toast" class="no-export"></div>
 <div id="legendMenu" class="no-export"></div>
+<div id="mselPop" class="no-export"></div>
+<div id="pickPop" class="no-export"></div>
+<!-- Data file menu (hidden) -->
+<div class="pop no-export" id="fileMenu">
+  <button type="button" data-act="btnTemplate">Download Template</button>
+  <button type="button" data-act="btnImport">Import Excel</button>
+  <button type="button" data-act="btnExportData">Export Data</button>
+</div>
 
 <main>
   <!-- ================= DASHBOARD ================= -->
@@ -421,14 +521,14 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
     <div class="quad">
       <div class="swipe" id="swCharts">
       <div class="panel">
-        <div class="panel-head"><h2>ROS: Price vs Revenue</h2></div>
+        <div class="panel-head"><div class="pos-head"><h2>Positioning:</h2><select id="posX" aria-label="Positioning measure 1"></select><span class="sub">vs</span><select id="posY" aria-label="Positioning measure 2"></select></div></div>
         <div class="chart-box"><canvas id="scatter"></canvas></div>
       </div>
       <div class="panel">
         <div class="panel-head">
           <h2>Revenue Mix</h2>
           <div class="mix-tools">
-            <label class="mini-sw"><span>ROS YoY</span><button class="switch light" id="yoySwitch" type="button" role="switch" aria-label="Show ROS year-on-year growth"></button></label>
+            <label class="mini-sw"><span>ROS growth</span><button class="switch light" id="yoySwitch" type="button" role="switch" aria-label="Show ROS growth (year-on-year)"></button></label>
             <div class="slicer" id="slicer"></div>
           </div>
         </div>
@@ -438,7 +538,13 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
       <div class="dots" id="dotsCharts"></div>
       <div class="swipe" id="swMx">
       <div class="panel">
-        <div class="panel-head mtx-head"><h2>Benchmarking</h2><span class="sub" id="benchSub"></span></div>
+        <div class="panel-head mtx-head">
+          <div class="mx-tools">
+            <button class="tswitch light" id="mxSwitch" type="button" role="switch" aria-label="Benchmarking / Trending"><span>Benchmarking</span><span>Trending</span></button>
+            <button class="pick" id="trendPick" type="button" aria-label="Select legend"></button>
+          </div>
+          <span class="sub" id="benchSub"></span>
+        </div>
         <div class="tbl-wrap"><table class="mtx" id="bench"></table><div class="mobile-matrix" id="benchMobile"></div></div>
       </div>
       <div class="panel">
@@ -465,9 +571,11 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
           </div>
         </div>
         <div class="actions">
-          <button class="btn-soft" id="btnTemplate" type="button">Download Template</button>
-          <button class="btn-soft teal" id="btnImport" type="button">Import Excel</button>
-          <button class="btn-soft teal" id="btnExportData" type="button">Export Data</button>
+          <button class="btn-soft desk-only" id="btnTemplate" type="button">Download Template</button>
+          <button class="btn-soft teal desk-only" id="btnImport" type="button">Import Excel</button>
+          <button class="btn-soft teal desk-only" id="btnExportData" type="button">Export Data</button>
+          <button class="btn-soft teal mob-only" id="btnFileMenu" type="button">Data &#9662;</button>
+          <button class="btn-soft" id="btnFilter" type="button">Filter</button>
           <button class="btn-soft danger" id="btnClear" type="button">Clear All</button>
           <button class="btn" id="addRow" type="button">+ Add Row</button>
           <input type="file" id="importFile" accept=".xlsx,.xls,.csv" hidden>
@@ -484,6 +592,16 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
             <th class="num" style="width:13%">Quantity (Test)</th>
             <th class="num" id="revHead">Revenue</th>
             <th style="width:44px"></th>
+          </tr>
+          <tr class="frow">
+            <th><button class="inp msel" type="button" data-ms="color"></button></th>
+            <th><button class="inp msel" type="button" data-ms="legend"></button></th>
+            <th><button class="inp msel" type="button" data-ms="cat"></button></th>
+            <th><button class="inp msel" type="button" data-ms="year"></button></th>
+            <th><input class="inp" data-flt="price" placeholder="Price e.g. >100"></th>
+            <th><input class="inp" data-flt="qty" placeholder="Qty e.g. >=1000"></th>
+            <th><input class="inp" data-flt="rev" placeholder="Revenue e.g. <500000"></th>
+            <th><button id="fltClear" type="button" title="Clear filters">&times;</button></th>
           </tr></thead>
           <tbody></tbody>
         </table>
@@ -499,7 +617,7 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
 const STORE_KEY = 'revDash.v9';          // unchanged so existing saved data is kept
 const DEFAULT_RATE = 32.35199;
 const CATS = ['ROS', 'Instrument', 'Rental'];
-const CAT_COLOR = { ROS: '#2E1A6B', Instrument: '#00A3AD', Rental: '#8C6BD6' };   // company-theme colours per revenue type
+const CAT_COLOR = { ROS: '#4A3C9E', Instrument: '#00A3AD', Rental: '#8C6BD6' };   // ROS lightened to match Instrument / Rental tone   // company-theme colours per revenue type
 const NO_COLOUR = '#B9B5C8';
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 /* Legend colours: deliberately different from the ROS / Instrument / Rental colours above */
@@ -510,6 +628,8 @@ const PALETTE = [
 ];
 const UNIT = { none: { div: 1, tag: '' }, K: { div: 1e3, tag: " '000" }, M: { div: 1e6, tag: ' M' } };
 const THIS_YEAR = new Date().getFullYear();
+const QTY_TAG = () => ({ none: '', K: "'000 ", M: 'M ' })[state.unit];   // test-count unit label
+const HDR_ROW = 3;   // Excel: row 1 = Project Name, row 3 = column headers
 const XL_HEAD = ['Legend', 'Category', 'Year', 'Price (THB)', 'Quantity (Test)', 'Total Revenue (THB)'];
 /* Year can be ANY positive whole number: 1, 2, 3, 4 ... or 2025, 2026, 2027 ... */
 const validYear = y => Number.isInteger(y) && y >= 1;
@@ -528,10 +648,15 @@ let storageOK = true;
 const newRow = year => ({ legend: '', cat: 'ROS', year: year ?? THIS_YEAR, price: 0, qty: 0 });
 function load() {
   const def = { rows: [newRow()], colors: {}, currency: 'THB', rate: DEFAULT_RATE, unit: 'none',
-                qtyMode: 'variable', fixedQty: 0, cmp: [['', ''], ['', '']], project: '', yoy: false };
+                qtyMode: 'variable', fixedQty: 0, cmp: [['', ''], ['', '']], project: '', yoy: true, mxMode: 'bench', trendLegend: '', posX: 'price', posY: 'volume', defV: 2 };
   try {
     const s = JSON.parse(localStorage.getItem(STORE_KEY));
-    if (s && Array.isArray(s.rows)) { const m = { ...def, ...s }; if (!m.rows.length) m.rows.push(newRow()); return m; }
+    if (s && Array.isArray(s.rows)) {
+      const m = { ...def, ...s }; if (!m.rows.length) m.rows.push(newRow());
+      /* one-time: apply the new defaults (Price vs Volume, ROS growth on) to previously saved settings */
+      if (s.defV !== 2) { m.posX = 'price'; m.posY = 'volume'; m.yoy = true; m.defV = 2; }
+      return m;
+    }
   } catch (e) { storageOK = false; }
   return def;
 }
@@ -550,7 +675,9 @@ let scatterChart = null, stackedChart = null;
    ========================================================= */
 const conv = thb => state.currency === 'USD' ? thb / state.rate : thb;
 const fmt = (v, d = 2) => Number(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
-const fmt0 = v => fmt(v, 0);                              // all numbers except price: no decimals
+const fmt0 = v => fmt(v, 0);
+const nd = () => state.unit === 'M' ? 1 : 0;      // decimals for rounded figures: 1 in millions, else 0
+const fmtR = v => fmt(v, nd());                              // all numbers except price: no decimals
 const unitLabel = () => state.currency + UNIT[state.unit].tag;
 const rev = thb => conv(thb) / UNIT[state.unit].div;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -629,8 +756,14 @@ function showPage(p) {
 }
 document.querySelectorAll('#nav button').forEach(b => b.onclick = () => showPage(b.dataset.page));
 
-const unitSel = document.getElementById('unitSel');
-unitSel.onchange = () => { state.unit = unitSel.value; save(); renderDashboard(); };
+const unitSel = document.getElementById('unitSel'), unitSeg = document.getElementById('unitSeg');
+function paintUnit() {
+  unitSel.value = state.unit;
+  unitSeg.querySelectorAll('button').forEach(b => { const on = b.dataset.unit === state.unit; b.classList.toggle('act', on); b.setAttribute('aria-checked', on); });
+}
+function setUnit(u) { state.unit = u; paintUnit(); save(); renderAll(); }
+unitSel.onchange = () => setUnit(unitSel.value);
+unitSeg.querySelectorAll('button').forEach(b => b.onclick = () => setUnit(b.dataset.unit));
 
 const sw = document.getElementById('curSwitch');
 function paintSwitch() {
@@ -644,12 +777,12 @@ sw.onclick = e => { e.stopPropagation(); state.currency = state.currency === 'US
 const PORTRAIT_MQ = window.matchMedia('(max-width: 600px) and (orientation: portrait)');
 const moreMenu = document.getElementById('moreMenu');
 function placeControls() {
-  const hr = document.querySelector('.hdr-right'), ex = document.getElementById('btnExport');
+  const hr = document.querySelector('.hdr-right'), ex = document.getElementById('btnMore');
   if (PORTRAIT_MQ.matches) {
     document.getElementById('mmCur').appendChild(sw);
     document.getElementById('mmUnit').appendChild(unitSel);
   } else {
-    hr.insertBefore(sw, ex); hr.insertBefore(unitSel, ex);
+    hr.insertBefore(sw, ex); hr.insertBefore(unitSeg, ex); hr.insertBefore(unitSel, ex);   // currency, then rounding
     moreMenu.classList.remove('open');
   }
 }
@@ -658,10 +791,6 @@ document.getElementById('btnMore').onclick = e => {
   document.getElementById('settings').classList.remove('open');
   moreMenu.classList.toggle('open');
 };
-moreMenu.querySelectorAll('[data-mexp]').forEach(b => b.onclick = () => {
-  moreMenu.classList.remove('open');
-  document.querySelector(`#exportMenu [data-exp="${b.dataset.mexp}"]`).click();
-});
 document.addEventListener('click', e => { if (!moreMenu.contains(e.target)) moreMenu.classList.remove('open'); });
 
 const setPop = document.getElementById('settings'), expPop = document.getElementById('exportMenu');
@@ -670,7 +799,6 @@ document.getElementById('btnSettings').onclick = e => {
   e.stopPropagation(); expPop.classList.remove('open');
   rateIn.value = state.rate; rateErr.textContent = ''; setPop.classList.toggle('open');
 };
-document.getElementById('btnExport').onclick = e => { e.stopPropagation(); setPop.classList.remove('open'); expPop.classList.toggle('open'); };
 document.addEventListener('click', e => {
   if (!setPop.contains(e.target)) setPop.classList.remove('open');
   if (!expPop.contains(e.target)) expPop.classList.remove('open');
@@ -747,10 +875,18 @@ const box = { top: thin, left: thin, bottom: thin, right: thin };
 async function buildWorkbook(rows, blankRows) {
   await loadScript(LIBS.exceljs);
   const wb = new ExcelJS.Workbook(); wb.creator = 'Revenue Dashboard';
-  const ws = wb.addWorksheet('Data', { views: [{ state: 'frozen', ySplit: 1 }] });
+  const ws = wb.addWorksheet('Data', { views: [{ state: 'frozen', ySplit: HDR_ROW }] });
   ws.columns = [{ width: 26 }, { width: 16 }, { width: 10 }, { width: 18 }, { width: 18 }, { width: 22 }];
 
-  const h = ws.getRow(1); h.values = XL_HEAD; h.height = 24;
+  /* Row 1: Project Name (imported back into the app) */
+  const pl = ws.getCell('A1'), pv = ws.getCell('B1');
+  pl.value = 'Project Name'; pl.font = { bold: true, color: { argb: XL.headFont } }; pl.fill = xfill(XL.head); pl.border = box;
+  pl.alignment = { vertical: 'middle' };
+  ws.mergeCells('B1:F1');
+  pv.value = (state.project || '').trim() || null; pv.font = { bold: true }; pv.border = box; pv.alignment = { vertical: 'middle' };
+  ws.getRow(1).height = 22;
+
+  const h = ws.getRow(HDR_ROW); h.values = XL_HEAD; h.height = 24;
   h.eachCell(c => {
     c.fill = xfill(XL.head); c.font = { bold: true, color: { argb: XL.headFont } };
     c.alignment = { vertical: 'middle', horizontal: 'center' }; c.border = box;
@@ -758,7 +894,7 @@ async function buildWorkbook(rows, blankRows) {
 
   const n = Math.max(rows.length + blankRows, 1);
   for (let i = 0; i < n; i++) {
-    const R = i + 2, r = rows[i], row = ws.getRow(R);
+    const R = i + HDR_ROW + 1, r = rows[i], row = ws.getRow(R);
     if (r) {
       row.getCell(1).value = r.legend.trim();
       row.getCell(2).value = r.cat;
@@ -790,13 +926,13 @@ async function buildWorkbook(rows, blankRows) {
     row.getCell(5).dataValidation = { type: 'whole', operator: 'greaterThanOrEqual', allowBlank: true, formulae: [0],
       showErrorMessage: true, errorTitle: 'Invalid Quantity', error: 'Quantity must be a whole number of 0 or more.' };
   }
-  ws.autoFilter = 'A1:F1';
+  ws.autoFilter = `A${HDR_ROW}:F${HDR_ROW}`;
 
   const ins = wb.addWorksheet('Instructions');
   ins.columns = [{ width: 95 }];
   [
     'How to fill in this template',
-    '1. Fill in Legend, Category, Year, Price (THB) and Quantity (Test) on the "Data" sheet (white/grey cells).',
+    '1. Enter the Project Name in cell B1, then fill in Legend, Category, Year, Price (THB) and Quantity (Test) on the "Data" sheet (white/grey cells).',
     '2. Select Category from the dropdown: ROS, Instrument or Rental.',
     '3. Year can be any whole number of 1 or more, e.g. 1, 2, 3, 4 or 2025, 2026, 2027.',
     '4. Rental quantity is always imported as 1.',
@@ -840,17 +976,23 @@ importFile.onchange = e => {
     const ws = wb.Sheets['Data'] || wb.Sheets[wb.SheetNames[0]];
     const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '' });
     if (!aoa.length) throw new Error('The file is empty.');
-    const head = aoa[0].map(x => String(x).trim().toLowerCase());
+    /* Project Name row (if present) and the header row (first row whose first cell is "Legend") */
+    let proj = null;
+    const pRow = aoa.findIndex(r => String(r[0] ?? '').trim().toLowerCase().startsWith('project'));
+    if (pRow >= 0) proj = String(aoa[pRow].slice(1).find(v => String(v).trim() !== '') ?? '').trim();
+    let hIdx = aoa.findIndex(r => String(r[0] ?? '').trim().toLowerCase().startsWith('legend'));
+    if (hIdx < 0) hIdx = 0;
+    const head = aoa[hIdx].map(x => String(x).trim().toLowerCase());
     const col = (key, def) => { const i = head.findIndex(x => x.startsWith(key)); return i >= 0 ? i : def; };
     const cL = col('legend', 0), cC = col('category', 1), cY = col('year', 2), cP = col('price', 3), cQ = col('quantity', 4);
 
     const rows = [], bad = [];
-    aoa.slice(1).forEach((r, i) => {
+    aoa.slice(hIdx + 1).forEach((r, i) => {
       const legend = String(r[cL] ?? '').trim(), catRaw = String(r[cC] ?? '').trim();
       if (!legend && !catRaw && r[cY] === '' && r[cP] === '' && r[cQ] === '') return;     // empty line
       const cat = CATS.find(c => c.toLowerCase() === catRaw.toLowerCase());
       const year = Math.round(toNum(r[cY])), price = toNum(r[cP]), qty = toNum(r[cQ]);
-      if (!legend || !cat || !validYear(year) || isNaN(price) || price < 0) { bad.push(i + 2); return; }
+      if (!legend || !cat || !validYear(year) || isNaN(price) || price < 0) { bad.push(i + hIdx + 2); return; }
       rows.push({ legend, cat, year, price, qty: cat === 'Rental' ? 1 : (isNaN(qty) || qty < 0 ? 0 : Math.round(qty)) });
     });
     if (!rows.length) throw new Error('No valid rows found. Check the Legend, Category, Year and Price columns.');
@@ -862,6 +1004,7 @@ importFile.onchange = e => {
     // auto-pick a colour once for each new Legend
     legendNames().forEach(n => { if (!colorOf(n)) state.colors[n] = nextColour(); });
     state.qtyMode = 'variable'; paintQtyMode();
+    if (proj) { state.project = proj; projIn.value = proj; paintProject(); }
     yearSel = null;
     save(); renderAll();
     toast(`Imported ${rows.length} row(s)` + (bad.length ? ` · skipped row(s) ${bad.slice(0, 10).join(', ')}${bad.length > 10 ? '…' : ''}` : ''));
@@ -889,14 +1032,25 @@ function colourOptions(sel) {
 const menu = document.getElementById('legendMenu');
 let menuInput = null;
 function openMenu(inp, showAll) {
-  const q = showAll ? '' : inp.value.trim().toLowerCase();
-  const names = legendNames().filter(n => n.toLowerCase().includes(q) && n !== inp.value.trim());
+  const cur = inp.value.trim(), all = legendNames();
+  /* show every Legend when the field is empty, already holds a Legend, or the ▾ button is used; filter only while typing a new name */
+  const q = (showAll || !cur || all.includes(cur)) ? '' : cur.toLowerCase();
+  const names = all.filter(n => n.toLowerCase().includes(q));
   if (!names.length) { closeMenu(); return; }
   menuInput = inp;
-  menu.innerHTML = names.map(n => `<div class="opt" data-v="${esc(n)}"><i class="dot" style="background:${dispColor(n)}"></i>${esc(n)}</div>`).join('');
-  const b = inp.getBoundingClientRect();
-  menu.style.left = b.left + 'px'; menu.style.top = (b.bottom + 4) + 'px'; menu.style.width = b.width + 'px';
+  menu.innerHTML = names.map(n => `<div class="opt ${n === cur ? 'cur' : ''}" data-v="${esc(n)}"><i class="dot" style="background:${dispColor(n)}"></i>${esc(n)}</div>`).join('');
   menu.classList.add('open');
+  placeMenu();
+}
+/* keep the list attached to its Legend field while the page / table scrolls or the phone keyboard opens */
+function placeMenu() {
+  if (!menuInput || !menu.classList.contains('open')) return;
+  const b = menuInput.getBoundingClientRect();
+  if (b.bottom < 0 || b.top > innerHeight) { menu.style.visibility = 'hidden'; return; }
+  menu.style.visibility = '';
+  const h = Math.min(menu.scrollHeight, 220), below = innerHeight - b.bottom;
+  const top = (below < h + 8 && b.top > h + 8) ? b.top - h - 4 : b.bottom + 4;
+  menu.style.left = b.left + 'px'; menu.style.top = top + 'px'; menu.style.width = Math.max(b.width, 160) + 'px';
 }
 function closeMenu() { menu.classList.remove('open'); menuInput = null; }
 menu.addEventListener('mousedown', e => {
@@ -905,8 +1059,133 @@ menu.addEventListener('mousedown', e => {
   const inp = menuInput; inp.value = o.dataset.v; closeMenu();
   inp._commit();
 });
-document.getElementById('inputWrap').addEventListener('scroll', closeMenu);
-window.addEventListener('resize', closeMenu);
+window.addEventListener('scroll', placeMenu, true);
+window.addEventListener('resize', placeMenu);
+if (window.visualViewport) { visualViewport.addEventListener('resize', placeMenu); visualViewport.addEventListener('scroll', placeMenu); }
+
+
+/* ---------- Data file menu (Download Template / Import Excel / Export Data) ---------- */
+const fileMenu = document.getElementById('fileMenu'), btnFileMenu = document.getElementById('btnFileMenu');
+btnFileMenu.onclick = e => {
+  e.stopPropagation();
+  const open = !fileMenu.classList.contains('open');
+  fileMenu.classList.toggle('open', open);
+  if (open) {
+    const b = btnFileMenu.getBoundingClientRect();
+    fileMenu.style.top = (b.bottom + 6) + 'px';
+    fileMenu.style.left = Math.max(8, Math.min(b.left, innerWidth - 218)) + 'px';
+    fileMenu.style.right = 'auto';
+  }
+};
+fileMenu.querySelectorAll('[data-act]').forEach(b => b.onclick = () => { fileMenu.classList.remove('open'); document.getElementById(b.dataset.act).click(); });
+document.addEventListener('click', e => { if (!fileMenu.contains(e.target) && e.target !== btnFileMenu) fileMenu.classList.remove('open'); });
+
+/* ---------- Data input filters (view only: they do not change the data or the Dashboard) ---------- */
+/* Colour, Legend, Type, Year: multi-select dropdowns. Price, Qty, Revenue: text conditions e.g. >100 */
+const fltSel = { color: new Set(), legend: new Set(), cat: new Set(), year: new Set() };
+const flt = { price: '', qty: '', rev: '' };
+const inputTable = document.getElementById('inputTable');
+const colourName = h => (PALETTE.find(p => p[1] === h) || ['Custom'])[0];
+const MSEL = {
+  color:  { all: 'All colours', search: false, opts: () => [...new Set(legendNames().map(colorOf).filter(Boolean))].map(h => ({ v: h, t: colourName(h), dot: h })) },
+  legend: { all: 'All legends', search: true,  opts: () => legendNames().map(n => ({ v: n, t: n, dot: dispColor(n) })) },
+  cat:    { all: 'All types',   search: false, opts: () => CATS.map(c => ({ v: c, t: c, dot: CAT_COLOR[c] })) },
+  year:   { all: 'All years',   search: false, opts: () => [...new Set(state.rows.map(r => r.year).filter(validYear).map(String))].sort(yearSort).map(y => ({ v: y, t: y })) }
+};
+const rowVal = { color: r => colorOf(r.legend) || '', legend: r => r.legend.trim(), cat: r => r.cat, year: r => String(r.year ?? '') };
+const numMatch = (val, q) => {
+  q = q.replace(/,/g, '').trim(); if (!q) return true;
+  const m = q.match(/^(>=|<=|>|<|=)\s*(-?\d+(?:\.\d+)?)$/);
+  if (m) { const n = +m[2]; return { '>': val > n, '<': val < n, '>=': val >= n, '<=': val <= n, '=': Math.abs(val - n) < 1e-9 }[m[1]]; }
+  return String(Math.round(val * 100) / 100).includes(q);
+};
+function rowMatches(r) {
+  for (const k in fltSel) if (fltSel[k].size && !fltSel[k].has(rowVal[k](r))) return false;
+  if (!numMatch(Number(r.price) || 0, flt.price)) return false;
+  if (!numMatch(effQty(r), flt.qty)) return false;
+  if (!numMatch(conv(revenue(r)), flt.rev)) return false;
+  return true;
+}
+const fltActive = () => Object.values(fltSel).some(x => x.size) || Object.values(flt).some(v => String(v).trim());
+function applyFilters() {
+  let shown = 0;
+  tbody.querySelectorAll('tr').forEach((tr, i) => { const ok = !state.rows[i] || rowMatches(state.rows[i]); tr.style.display = ok ? '' : 'none'; if (ok) shown++; });
+  const b = document.getElementById('btnFilter');
+  b.textContent = fltActive() ? `Filter (${shown}/${state.rows.length})` : 'Filter';
+  b.classList.toggle('on', inputTable.classList.contains('filtering'));
+}
+/* button text: "All …", the single choice, or "n selected" (with colour marks) */
+function paintMsel(k) {
+  const btn = inputTable.querySelector(`[data-ms="${k}"]`), sel = fltSel[k], opts = MSEL[k].opts();
+  const picked = opts.filter(o => sel.has(o.v));
+  const dots = picked.filter(o => o.dot).slice(0, 4).map(o => `<i class="dot" style="background:${o.dot}"></i>`).join('');
+  const txt = !picked.length ? MSEL[k].all : picked.length === 1 ? esc(picked[0].t) : `${picked.length} selected`;
+  btn.innerHTML = `<span class="ms-t">${dots}${txt}</span><span class="ms-c">&#9662;</span>`;
+  btn.classList.toggle('act', picked.length > 0);
+}
+/* drop selections that no longer exist (e.g. a Legend was renamed) and refresh all buttons */
+function refreshMsel() {
+  Object.keys(MSEL).forEach(k => { const vs = new Set(MSEL[k].opts().map(o => o.v)); [...fltSel[k]].forEach(v => { if (!vs.has(v)) fltSel[k].delete(v); }); paintMsel(k); });
+}
+const mselPop = document.getElementById('mselPop');
+let mselKey = null, mselBtn = null;
+function drawMselList(q = '') {
+  const k = mselKey, sel = fltSel[k];
+  const opts = MSEL[k].opts().filter(o => o.t.toLowerCase().includes(q.toLowerCase()));
+  mselPop.querySelector('.ms-list').innerHTML = opts.length ? opts.map(o => `
+    <label class="ms-o"><input type="checkbox" value="${esc(o.v)}" ${sel.has(o.v) ? 'checked' : ''}>${o.dot ? `<i class="dot" style="background:${o.dot}"></i>` : ''}<span>${esc(o.t)}</span></label>`).join('')
+    : '<div class="ms-none">No match</div>';
+  mselPop.querySelectorAll('.ms-list input').forEach(cb => cb.onchange = () => {
+    cb.checked ? sel.add(cb.value) : sel.delete(cb.value);
+    paintMsel(k); applyFilters();
+  });
+}
+function openMsel(btn) {
+  const k = btn.dataset.ms;
+  if (mselKey === k && mselPop.classList.contains('open')) { closeMsel(); return; }
+  mselKey = k; mselBtn = btn;
+  mselPop.innerHTML = `${MSEL[k].search ? '<input class="inp ms-q" placeholder="Type to filter…" autocomplete="off">' : ''}
+    <div class="ms-bar"><button type="button" data-a="all">Select all</button><button type="button" data-a="none">Clear</button></div>
+    <div class="ms-list"></div>`;
+  drawMselList();
+  const q = mselPop.querySelector('.ms-q');
+  if (q) q.oninput = () => drawMselList(q.value);
+  mselPop.querySelector('[data-a="all"]').onclick = () => {
+    const shown = [...mselPop.querySelectorAll('.ms-list input')].map(c => c.value);
+    shown.forEach(v => fltSel[k].add(v)); drawMselList(q ? q.value : ''); paintMsel(k); applyFilters();
+  };
+  mselPop.querySelector('[data-a="none"]').onclick = () => { fltSel[k].clear(); drawMselList(q ? q.value : ''); paintMsel(k); applyFilters(); };
+  mselPop.classList.add('open');
+  placeMsel();
+  if (q && !PORTRAIT_MQ.matches) q.focus();
+}
+function placeMsel() {
+  if (!mselBtn || !mselPop.classList.contains('open')) return;
+  const b = mselBtn.getBoundingClientRect(), w = Math.max(b.width, 190);
+  const h = Math.min(mselPop.scrollHeight, 300), below = innerHeight - b.bottom;
+  mselPop.style.width = w + 'px';
+  mselPop.style.left = Math.max(8, Math.min(b.left, innerWidth - w - 8)) + 'px';
+  mselPop.style.top = ((below < h + 8 && b.top > h + 8) ? b.top - h - 4 : b.bottom + 4) + 'px';
+}
+function closeMsel() { mselPop.classList.remove('open'); mselKey = null; mselBtn = null; }
+inputTable.querySelectorAll('[data-ms]').forEach(btn => btn.onclick = e => { e.stopPropagation(); openMsel(btn); });
+document.addEventListener('click', e => { if (!mselPop.contains(e.target) && !e.target.closest('[data-ms]')) closeMsel(); });
+window.addEventListener('scroll', e => { if (!mselPop.contains(e.target)) placeMsel(); }, true);
+window.addEventListener('resize', placeMsel);
+
+inputTable.querySelectorAll('input[data-flt]').forEach(el => el.addEventListener('input', () => { flt[el.dataset.flt] = el.value; applyFilters(); }));
+function clearFilters() {
+  Object.values(fltSel).forEach(x => x.clear());
+  Object.keys(flt).forEach(k => flt[k] = '');
+  inputTable.querySelectorAll('input[data-flt]').forEach(el => el.value = '');
+  closeMsel(); refreshMsel(); applyFilters();
+}
+document.getElementById('fltClear').onclick = clearFilters;
+document.getElementById('btnFilter').onclick = () => {
+  const on = !inputTable.classList.contains('filtering');
+  inputTable.classList.toggle('filtering', on);
+  if (!on) clearFilters(); else { refreshMsel(); applyFilters(); }
+};
 
 /* ---------- Variable / Fixed quantity toggle ---------- */
 const qsw = document.getElementById('qtySwitch'), fqWrap = document.getElementById('fixedQtyWrap'), fqIn = document.getElementById('fixedQty');
@@ -957,6 +1236,7 @@ function renderInput() {
       <td class="num rev-cell" data-rev>${fmt0(conv(revenue(r)))}</td>
       <td><button class="del" type="button" title="Delete row">&times;</button></td>`;
     paintColourCell(tr, r.legend);
+    tr.style.setProperty('--lc', colorOf(r.legend) || 'var(--line)');     // Legend colour stripe (mobile cards)
 
     /* Legend: typing does not assign a colour; colour is auto-picked once when the Legend is committed */
     const lg = tr.querySelector('[data-f="legend"]');
@@ -1008,10 +1288,12 @@ function renderInput() {
     };
     tbody.appendChild(tr);
   });
+  refreshMsel(); applyFilters();
 }
 function afterEdit(r, tr) { tr.querySelector('[data-rev]').textContent = fmt0(conv(revenue(r))); save(); }
 
 document.getElementById('addRow').onclick = () => {
+  if (fltActive()) { clearFilters(); toast('Filters cleared to show the new row.'); }
   const last = state.rows[state.rows.length - 1];
   state.rows.push(newRow(last && validYear(last.year) ? last.year : THIS_YEAR));   // new row copies the previous row's year
   save(); renderInput();
@@ -1025,12 +1307,15 @@ document.getElementById('addRow').onclick = () => {
 const FONT_B = () => '700 11px ' + css('--font');
 const FONT_R = () => '600 10px ' + css('--font');
 
-const bubbleLines = d => [d.label, fmt0(d.y), 'Avg ' + fmt(d.x, 2)];
+/* number of tests in the selected rounding unit, e.g. 25 '000 */
+const volTxt = v => fmtR(v) + (state.unit === 'K' ? " '000" : state.unit === 'M' ? ' M' : '');
+/* circle label (4 lines): Legend / revenue / avg price / volume */
+const bubbleLines = d => [d.label, 'Rev ' + fmtR(d.revenue), 'Price ' + fmt(d.price, 2), 'Vol ' + volTxt(d.volume)];
 function bubbleRadius(d) {
   const c = document.createElement('canvas').getContext('2d'), L = bubbleLines(d);
   c.font = FONT_B(); const w0 = c.measureText(L[0]).width;
-  c.font = FONT_R(); const w = Math.max(w0, c.measureText(L[1]).width, c.measureText(L[2]).width);
-  return Math.ceil(Math.sqrt((w / 2) ** 2 + 22 ** 2)) + 6;
+  c.font = FONT_R(); const w = Math.max(w0, ...L.slice(1).map(t => c.measureText(t).width));
+  return Math.ceil(Math.sqrt((w / 2) ** 2 + 28 ** 2)) + 6;
 }
 const scatterLabels = {
   id: 'scatterLabels',
@@ -1038,46 +1323,92 @@ const scatterLabels = {
     const { ctx } = chart, ds = chart.data.datasets[0];
     ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff';
     chart.getDatasetMeta(0).data.forEach((pt, i) => {
-      bubbleLines(ds.data[i]).forEach((t, k) => { ctx.font = k === 0 ? FONT_B() : FONT_R(); ctx.fillText(t, pt.x, pt.y + (k - 1) * 14); });
+      bubbleLines(ds.data[i]).forEach((t, k) => { ctx.font = k === 0 ? FONT_B() : FONT_R(); ctx.fillText(t, pt.x, pt.y + (k - 1.5) * 14); });
     });
     ctx.restore();
   }
 };
 
 /** Revenue Mix labels: segment values, column total on top, year under each column */
+/* Chart label: full number if it fits; otherwise K / M (M with 1 decimal). Values already in the selected unit. */
+const valTxt = v => state.unit === 'M' ? fmt(v, 1) : fmt0(v);     // full number for callouts
+/* Wrapping level: 0 = full number, 1 = K, 2 = M  (depends on the selected rounding unit) */
+function numLevel(ctx, v, maxW) {
+  const full = state.unit === 'M' ? fmt(v, 1) : fmt0(v);
+  if (ctx.measureText(full).width <= maxW) return 0;
+  const a = Math.abs(v);
+  if (state.unit === 'none') return a >= 1e6 ? 2 : a >= 1e3 ? 1 : 0;
+  if (state.unit === 'K') return a >= 1e3 ? 2 : 0;
+  return 0;
+}
+function numAt(v, lvl) {
+  if (!lvl) return state.unit === 'M' ? fmt(v, 1) : fmt0(v);
+  if (state.unit === 'none') return lvl === 2 ? fmt(v / 1e6, 1) + 'M' : fmt0(v / 1e3) + 'K';
+  return fmt(v / 1e3, 1) + 'M';                                     // unit K -> M
+}
+function chartNum(ctx, v, maxW) {
+  const full = state.unit === 'M' ? fmt(v, 1) : fmt0(v);
+  if (ctx.measureText(full).width <= maxW) return full;
+  const a = Math.abs(v);
+  if (state.unit === 'none') { if (a >= 1e6) return fmt(v / 1e6, 1) + 'M'; if (a >= 1e3) return fmt0(v / 1e3) + 'K'; }
+  if (state.unit === 'K' && a >= 1e3) return fmt(v / 1e3, 1) + 'M';
+  return full;
+}
 const stackLabels = {
   id: 'stackLabels',
+  /* pointing at a column-total label shows a callout in the same style as the category callout */
+  afterEvent(chart, args) {
+    const e = args.event; if (!chart.$tot) return;
+    const hit = (e.type === 'mouseout') ? null : chart.$tot.find(t => e.x >= t.x1 && e.x <= t.x2 && e.y >= t.y1 && e.y <= t.y2);
+    if (hit) {
+      chart.$totHit = hit;
+      chart.tooltip.setActiveElements([{ datasetIndex: hit.ds, index: hit.idx }], { x: e.x, y: e.y });
+      args.changed = true;
+    } else if (chart.$totHit) { chart.$totHit = null; args.changed = true; }
+  },
   afterDatasetsDraw(chart) {
     const { ctx, chartArea } = chart, groups = new Map();
+    chart.$tot = [];                                            // hit areas of the column-total labels
     ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    /* pass 1: totals per column + the wrapping level each segment needs */
+    const segs = [];
     chart.data.datasets.forEach((ds, k) => {
       chart.getDatasetMeta(k).data.forEach((bar, i) => {
         const v = ds.data[i] || 0, key = ds.stack + '|' + i;
-        if (!groups.has(key)) groups.set(key, { x: bar.x, top: Infinity, tot: 0, year: ds.stack, w: bar.width });
+        if (!groups.has(key)) groups.set(key, { x: bar.x, top: Infinity, tot: 0, year: ds.stack, w: bar.width, ds: k, idx: i, lvl: 0 });
         if (!v) return;
-        const g = groups.get(key); g.tot += v; g.top = Math.min(g.top, bar.y);
-        const h = Math.abs(bar.base - bar.y), txt = fmt0(v), mid = (bar.y + bar.base) / 2;
-        ctx.font = FONT_R(); ctx.fillStyle = '#fff';
-        /* Every segment: revenue value exactly as before.
-           ROS + YoY switch on: "▲ 0.0%" is added on a second line UNDER the value (no colour scale). */
-        const fitV = h >= 18 && ctx.measureText(txt).width < bar.width - 6;
-        const g2 = state.yoy && ds.cat === 'ROS' && ds.yoy ? ds.yoy[i] : null;
-        if (g2 != null && fitV) {
-          const yt = (g2 > 0 ? '▲ ' : g2 < 0 ? '▼ ' : '– ') + Math.abs(g2).toFixed(1) + '%';
-          if (h >= 30 && ctx.measureText(yt).width < bar.width - 4) {
-            ctx.fillText(txt, bar.x, mid - 6);
-            ctx.font = '500 9px ' + css('--font');
-            ctx.fillText(yt, bar.x, mid + 7);
-            return;
-          }
-        }
-        if (fitV) ctx.fillText(txt, bar.x, mid);
+        const g = groups.get(key); g.tot += v;
+        if (bar.y < g.top) { g.top = bar.y; g.ds = k; }
+        const h = Math.abs(bar.base - bar.y);
+        if (h < 12) return;                                     // segment too thin for any text
+        ctx.font = FONT_R();
+        g.lvl = Math.max(g.lvl, numLevel(ctx, v, bar.width - 4));
+        segs.push({ ds, i, v, bar, h, g });
       });
+    });
+    /* pass 2: every category in the same column uses the same wrapping (e.g. 15.0M / 2.5M / 0.2M) */
+    segs.forEach(({ ds, i, v, bar, h, g }) => {
+      const mid = (bar.y + bar.base) / 2;
+      ctx.font = FONT_R(); ctx.fillStyle = '#fff';
+      const txt = numAt(v, g.lvl);
+      /* ROS growth (switch on): "▲ 0.0%" on a second line UNDER the revenue number; no colour scale */
+      const g2 = state.yoy && ds.cat === 'ROS' && ds.yoy ? ds.yoy[i] : null;
+      if (g2 != null && h >= 28) {
+        const yt = (g2 > 0 ? '▲ ' : g2 < 0 ? '▼ ' : '– ') + Math.abs(g2).toFixed(1) + '%';
+        ctx.fillText(txt, bar.x, mid - 6);
+        ctx.font = '500 9px ' + css('--font');
+        ctx.fillText(yt, bar.x, mid + 7);
+        return;
+      }
+      ctx.fillText(txt, bar.x, mid);
     });
     groups.forEach(g => {
       if (g.tot <= 0) return;
       ctx.font = '700 11px ' + css('--font'); ctx.fillStyle = css('--text');
-      ctx.fillText(fmt0(g.tot), g.x, g.top - 10);
+      /* same wrapping rule as the column labels: full number if it fits the column width, else K / M */
+      const tt = chartNum(ctx, g.tot, g.w - 2), tw = ctx.measureText(tt).width;
+      ctx.fillText(tt, g.x, g.top - 10);
+      chart.$tot.push({ x1: g.x - Math.max(tw, 14) / 2 - 4, x2: g.x + Math.max(tw, 14) / 2 + 4, y1: g.top - 20, y2: g.top, ds: g.ds, idx: g.idx, tot: g.tot });
       ctx.font = '600 10px ' + css('--font'); ctx.fillStyle = css('--muted');
       ctx.fillText(g.year, g.x, chartArea.bottom + 9);
     });
@@ -1088,6 +1419,26 @@ const stackLabels = {
 /* =========================================================
    DASHBOARD
    ========================================================= */
+/* ---------- Positioning: measure 1 (horizontal) vs measure 2 (vertical); the two can never be the same ---------- */
+const POS = { price: 'Price', volume: 'Volume', revenue: 'Revenue' };
+function paintPos() {
+  if (!POS[state.posX]) state.posX = 'price';
+  if (!POS[state.posY] || state.posY === state.posX) state.posY = state.posX === 'volume' ? 'price' : 'volume';
+  const fill = (id, cur, other) => {
+    document.getElementById(id).innerHTML = Object.keys(POS).filter(k => k !== other)
+      .map(k => `<option value="${k}" ${k === cur ? 'selected' : ''}>${POS[k]}</option>`).join('');
+  };
+  fill('posX', state.posX, state.posY); fill('posY', state.posY, state.posX);
+}
+document.getElementById('posX').onchange = e => { state.posX = e.target.value; paintPos(); save(); renderDashboard(); };
+document.getElementById('posY').onchange = e => { state.posY = e.target.value; paintPos(); save(); renderDashboard(); };
+const posTitle = (k, U) => k === 'price' ? `ROS Price (${state.currency})` : k === 'volume' ? `ROS Volume (${QTY_TAG()}Test)` : `ROS Revenue (${U})`;
+/* price: 2 decimals; volume / revenue: decimals follow the rounding unit, more only when the axis step is below 1 */
+const posTick = k => k === 'price' ? v => fmt(v, 2) : (v, i, ticks) => {
+  const step = ticks && ticks.length > 1 ? Math.abs(ticks[1].value - ticks[0].value) : 1;
+  return fmt(v, step >= 1 ? nd() : Math.min(2, Math.max(nd(), Math.ceil(-Math.log10(step)))));
+};
+
 const yoySw = document.getElementById('yoySwitch');
 function paintYoy() { yoySw.classList.toggle('on', !!state.yoy); yoySw.setAttribute('aria-checked', !!state.yoy); }
 document.querySelector('.mini-sw').onclick = e => { e.preventDefault(); state.yoy = !state.yoy; paintYoy(); save(); renderDashboard(); };
@@ -1130,12 +1481,13 @@ function range(vals, padPct) {
 }
 
 const ATTRS = [
-  { name: 'ROS Quantity (Test)', val: a => a.rosQty,            dec: 0 },
+  /* number of tests follows the selected rounding; label shows the unit e.g. ('000 Test) */
+  { get name() { return `ROS Quantity (${QTY_TAG()}Test)`; }, val: a => a.rosQty / UNIT[state.unit].div, get dec() { return nd(); } },
   { name: 'ROS Avg Price',       val: a => conv(a.rosAvgPrice), dec: 2 },
-  { name: 'ROS Revenue',         val: a => rev(a.ROS),          dec: 0 },
-  { name: 'Instrument Revenue',  val: a => rev(a.Instrument),   dec: 0 },
-  { name: 'Rental Revenue',      val: a => rev(a.Rental),       dec: 0 },
-  { name: 'Total Revenue',       val: a => rev(a.total),        dec: 0 }
+  { name: 'ROS Revenue',         val: a => rev(a.ROS),          get dec() { return nd(); } },
+  { name: 'Instrument Revenue',  val: a => rev(a.Instrument),   get dec() { return nd(); } },
+  { name: 'Rental Revenue',      val: a => rev(a.Rental),       get dec() { return nd(); } },
+  { name: 'Total Revenue',       val: a => rev(a.total),        get dec() { return nd(); } }
 ];
 
 function renderDashboard() {
@@ -1147,36 +1499,54 @@ function renderDashboard() {
   Chart.defaults.font.family = css('--font'); Chart.defaults.font.size = 11; Chart.defaults.color = css('--muted');
   buildYearSlicer();
   const rows = filteredRows(), data = aggregate(rows), U = unitLabel();
-  const noGrid = { grid: { display: false }, border: { color: css('--line') }, ticks: { padding: 4, callback: v => fmt0(v) } };
+  const noGrid = { grid: { display: false }, border: { color: css('--line') }, ticks: { padding: 4, callback: v => fmtR(v) } };
 
   /* ----- Cards (selected years, total) ----- */
   document.getElementById('cards').innerHTML = data.length ? data.map(a => `
     <div class="card">
       <div class="left" style="border-color:${a.color}">
         <div class="lg" style="color:${a.color}" title="${esc(a.legend)}">${esc(a.legend)}</div>
-        <div class="tot">${fmt0(rev(a.total))}</div>
+        <div class="tot ${fmtR(rev(a.total)).length > 12 ? 'xl' : fmtR(rev(a.total)).length > 9 ? 'lg2' : ''}">${fmtR(rev(a.total))}</div>
         <div class="cur">Total Revenue (${U})</div>
       </div>
       <div class="right">
-        ${CATS.map(c => `<span><i class="dot" style="background:${CAT_COLOR[c]}"></i>${c}</span><span>${fmt0(rev(a[c]))}</span>`).join('')}
+        ${CATS.map(c => `<span><i class="dot" style="background:${CAT_COLOR[c]}"></i><b class="lf">${c}</b><b class="ls">${c === 'Instrument' ? 'Instr.' : c}</b></span><span>${fmtR(rev(a[c]))}</span>`).join('')}
       </div>
     </div>`).join('') : '<div class="card"><span class="empty">No data yet. Add rows in Data Input.</span></div>';
 
-  /* ----- Scatter (ROS, selected years in total) ----- */
-  const pts = data.filter(a => a.rosQty > 0).map(a => ({ x: conv(a.rosAvgPrice), y: rev(a.ROS), label: a.legend, color: a.color }));
+  /* ----- Positioning scatter (ROS, selected years in total): any two of Price / Volume / Revenue ----- */
+  const pts = data.filter(a => a.rosQty > 0).map(a => {
+    const m = { price: conv(a.rosAvgPrice), volume: a.rosQty / UNIT[state.unit].div, revenue: rev(a.ROS) };
+    return { x: m[state.posX], y: m[state.posY], price: m.price, volume: m.volume, revenue: m.revenue, label: a.legend, color: a.color };
+  });
   const radii = pts.map(bubbleRadius), maxR = Math.max(0, ...radii);
-  if (scatterChart) scatterChart.destroy();
-  scatterChart = new Chart(document.getElementById('scatter'), {
+  /* axis headroom = circle radius in pixels, so no extra empty band between the header and the plot */
+  const sBox = document.getElementById('scatter').parentElement;
+  const padRange = (vals, plotPx) => {
+    if (!vals.length) return {};
+    let mn = Math.min(...vals), mx = Math.max(...vals);
+    if (mn === mx) { const p = Math.abs(mn) * 0.3 || 1; mn -= p; mx += p; }
+    const r = maxR + 6, f = plotPx - 2 * r > 40 ? Math.min(1.5, Math.max(0.08, r / (plotPx - 2 * r))) : 0.5;
+    return { min: Math.max(0, mn - (mx - mn) * f), max: mx + (mx - mn) * f };
+  };
+  const plotH = (sBox.clientHeight || 240) - 56, plotW = (sBox.clientWidth || 400) - 78;
+  scatterChart = upsertChart(scatterChart, 'scatter', {
     type: 'scatter',
     data: { datasets: [{ data: pts, backgroundColor: pts.map(p => p.color), pointRadius: radii, pointHoverRadius: radii.map(r => r + 2), borderColor: '#fff', borderWidth: 2 }] },
     options: {
-      responsive: true, maintainAspectRatio: false, animation: { duration: 300 }, clip: false,
-      layout: { padding: { top: maxR, right: maxR, bottom: 4, left: 4 } },
+      responsive: true, maintainAspectRatio: false, animation: anim(), clip: false,
+      layout: { padding: { top: 4, right: 6, bottom: 2, left: 2 } },
       plugins: { legend: { display: false },
-        tooltip: { callbacks: { label: c => `${c.raw.label}: Avg price ${fmt(c.raw.x, 2)} | Revenue ${fmt0(c.raw.y)}` } } },
+        /* callout: Legend colour mark before the Legend name, then Rev / Price / Vol */
+        tooltip: { usePointStyle: true, callbacks: {
+          title: () => '',
+          label: c => [c.raw.label, `Rev ${fmtR(c.raw.revenue)}`, `Price ${fmt(c.raw.price, 2)}`, `Vol ${volTxt(c.raw.volume)}`],
+          labelColor: c => ({ borderColor: c.raw.color, backgroundColor: c.raw.color }),
+          labelPointStyle: () => ({ pointStyle: 'circle', rotation: 0 })
+        } } },
       scales: {
-        x: { ...noGrid, ...range(pts.map(p => p.x), 0.35), ticks: { padding: 4, callback: v => fmt(v, 2) }, title: { display: true, text: `Avg Price (${state.currency})` } },
-        y: { ...noGrid, ...range(pts.map(p => p.y), 0.35), title: { display: true, text: `ROS Revenue (${U})` } }
+        x: { ...noGrid, ...padRange(pts.map(p => p.x), plotW), ticks: { padding: 4, callback: posTick(state.posX) }, title: { display: true, text: posTitle(state.posX, U) } },
+        y: { ...noGrid, ...padRange(pts.map(p => p.y), plotH), ticks: { padding: 4, callback: posTick(state.posY) }, title: { display: true, text: posTitle(state.posY, U) } }
       }
     },
     plugins: [scatterLabels]
@@ -1220,15 +1590,18 @@ function renderDashboard() {
     maxBarThickness: 48, categoryPercentage: .8, barPercentage: .9
   })));
 
-  if (stackedChart) stackedChart.destroy();
-  stackedChart = new Chart(document.getElementById('stacked'), {
+  stackedChart = upsertChart(stackedChart, 'stacked', {
     type: 'bar',
     data: { labels: names, datasets },
     options: {
-      responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
+      responsive: true, maintainAspectRatio: false, animation: anim(),
       layout: { padding: { top: 20 } },
       plugins: { legend: { display: false },
-        tooltip: { callbacks: { title: c => `${c[0].label} · ${c[0].dataset.stack}`, label: c => `${c.dataset.cat}: ${fmt0(c.raw)}` } } },
+        tooltip: { callbacks: {
+          title: c => `${c[0].label} · ${c[0].dataset.stack}`,
+          label: c => c.chart.$totHit ? `Total: ${valTxt(c.chart.$totHit.tot)}` : `${c.dataset.cat}: ${valTxt(c.raw)}`,
+          labelColor: c => c.chart.$totHit ? { borderColor: css('--text'), backgroundColor: css('--text') } : { borderColor: c.dataset.backgroundColor, backgroundColor: c.dataset.backgroundColor }
+        } } },
       scales: {
         x: { stacked: true, grid: { display: false }, border: { color: css('--line') },
              ticks: { padding: 18, color: ctx => (data[ctx.index] || {}).color || css('--muted'), font: { weight: '700' } } },
@@ -1243,8 +1616,17 @@ function renderDashboard() {
 }
 
 
+/* Update an existing chart in place (no destroy / re-create) so it does not blink */
+const anim = () => isPhonePortrait() ? false : { duration: 300 };
+function upsertChart(chart, id, cfg) {
+  if (chart) { chart.data = cfg.data; chart.options = cfg.options; chart.update('none'); return chart; }
+  return new Chart(document.getElementById(id), cfg);
+}
 function isPhonePortrait(){ return window.matchMedia('(max-width: 600px) and (orientation: portrait)').matches; }
 const MX_SHORT = ['ROS Qty', 'ROS Price', 'ROS Rev', 'Instr Rev', 'Rental Rev', 'Total Rev'];
+Object.defineProperty(MX_SHORT, 0, { get: () => state.unit === 'none' ? 'ROS Qty' : `ROS Qty (${QTY_TAG().trim()})` });
+/* Card layout - column 1: ROS Qty, ROS Price, Total Rev | column 2: ROS Rev, Instr Rev, Rental Rev */
+const MX_ORDER = [0, 2, 1, 3, 5, 4];
 function renderBenchMobile(data) {
   const box = document.getElementById('benchMobile'), table = document.getElementById('bench');
   if (!isPhonePortrait()) { box.innerHTML = ''; table.classList.remove('mobile-hidden'); return; }
@@ -1254,8 +1636,8 @@ function renderBenchMobile(data) {
   box.innerHTML = data.map(a => `
     <div class="mc">
       <div class="mc-head"><i class="dot" style="background:${a.color}"></i><span class="mc-name">${esc(a.legend)}</span></div>
-      <div class="mc-grid">${ATTRS.map((at, i) => {
-        const v = at.val(a), e = ext[i], c = e.scale && v === e.mx ? 'hi' : e.scale && v === e.mn ? 'lo' : '', t = fmt(v, at.dec);
+      <div class="mc-grid">${MX_ORDER.map(i => {
+        const at = ATTRS[i], v = at.val(a), e = ext[i], c = e.scale && v === e.mx ? 'hi' : e.scale && v === e.mn ? 'lo' : '', t = fmt(v, at.dec);
         return `<div class="mc-cell"><span class="mc-l">${MX_SHORT[i]}</span><span class="mc-v">${c ? `<span class="${c}">${t}</span>` : t}</span></div>`;
       }).join('')}</div>
     </div>`).join('');
@@ -1265,21 +1647,22 @@ function renderCompareMobile(data) {
   if (!isPhonePortrait()) { box.innerHTML = ''; table.classList.remove('mobile-hidden'); return; }
   table.classList.add('mobile-hidden');
   if (data.length < 2) { box.innerHTML = '<div class="empty">Add at least 2 legends to compare</div>'; return; }
-  const names = data.map(a => a.legend), pair = state.cmp[0];          // mobile: 1 comparison bucket only
-  const byName = n => data.find(a => a.legend === n);
-  const opts = cur => names.map(n => `<option ${n === cur ? 'selected' : ''}>${esc(n)}</option>`).join('');
-  const cell = at => {
+  const names = data.map(a => a.legend), byName = n => data.find(a => a.legend === n);
+  fixPairs(names);
+  const opts = (cur, other) => names.filter(n => n !== other).map(n => `<option ${n === cur ? 'selected' : ''}>${esc(n)}</option>`).join('');
+  const cell = (at, pair) => {
     const X = at.val(byName(pair[0])), Y = at.val(byName(pair[1])), d = X - Y, v = fmt(Math.abs(d), at.dec);
     if (Math.abs(d) < 1e-9) return `<span class="ball flat">– ${v} | 0%</span>`;
     const pct = Y ? `${d > 0 ? '+' : '-'}${fmt0(Math.abs(d / Y * 100))}%` : 'n/a';
     return d > 0 ? `<span class="ball up">▲ ${v} | ${pct}</span>` : `<span class="ball down">▼ ${v} | ${pct}</span>`;
   };
-  box.innerHTML = `
+  /* 2 comparison cards (same buckets as the normal view) */
+  box.innerHTML = state.cmp.map((pair, k) => `
     <div class="mc">
-      <div class="mc-head"><select data-s="0">${opts(pair[0])}</select><span class="sub">vs</span><select data-s="1">${opts(pair[1])}</select></div>
-      <div class="mc-grid">${ATTRS.map((at, i) => `<div class="mc-cell"><span class="mc-l">${MX_SHORT[i]}</span><span class="mc-v">${cell(at)}</span></div>`).join('')}</div>
-    </div>`;
-  box.querySelectorAll('select').forEach(sel => sel.onchange = () => { state.cmp[0][+sel.dataset.s] = sel.value; save(); renderCompare(aggregate()); });
+      <div class="mc-head"><select data-c="${k}" data-s="0">${opts(pair[0], pair[1])}</select><span class="sub">vs</span><select data-c="${k}" data-s="1">${opts(pair[1], pair[0])}</select></div>
+      <div class="mc-grid">${MX_ORDER.map(i => `<div class="mc-cell"><span class="mc-l">${MX_SHORT[i]}</span><span class="mc-v">${cell(ATTRS[i], pair)}</span></div>`).join('')}</div>
+    </div>`).join('');
+  box.querySelectorAll('select').forEach(sel => sel.onchange = () => { state.cmp[+sel.dataset.c][+sel.dataset.s] = sel.value; save(); renderCompare(aggregate()); });
 }
 
 /* ----- Swipe dots (mobile portrait) ----- */
@@ -1292,8 +1675,88 @@ function setupSwipe(swId, dotsId) {
   dots.querySelectorAll('i').forEach(d => d.onclick = () => sc.scrollTo({ left: +d.dataset.i * step(), behavior: 'smooth' }));
 }
 
+
+/* =========================================================
+   BENCHMARKING / TRENDING
+   ========================================================= */
+const mxSw = document.getElementById('mxSwitch'), trendPick = document.getElementById('trendPick'), pickPop = document.getElementById('pickPop');
+function paintMx() {
+  const tr = state.mxMode === 'trend';
+  mxSw.classList.toggle('on', tr); mxSw.setAttribute('aria-checked', tr);
+  mxSw.children[0].classList.toggle('act', !tr); mxSw.children[1].classList.toggle('act', tr);
+  trendPick.classList.toggle('show', tr);
+}
+mxSw.onclick = () => { state.mxMode = state.mxMode === 'trend' ? 'bench' : 'trend'; paintMx(); closePick(); save(); renderBench(aggregate(), unitLabel()); };
+function paintPick() {
+  const n = state.trendLegend;
+  trendPick.innerHTML = n ? `<i class="dot" style="background:${dispColor(n)}"></i><span class="pk-t">${esc(n)}</span><span class="pk-c">&#9662;</span>`
+                          : `<span class="pk-t">Select legend</span><span class="pk-c">&#9662;</span>`;
+}
+function closePick() { pickPop.classList.remove('open'); }
+trendPick.onclick = e => {
+  e.stopPropagation();
+  if (pickPop.classList.contains('open')) { closePick(); return; }
+  const names = legendNames();
+  pickPop.innerHTML = names.map(n => `<div class="pk-o ${n === state.trendLegend ? 'cur' : ''}" data-v="${esc(n)}"><i class="dot" style="background:${dispColor(n)}"></i>${esc(n)}</div>`).join('') || '<div class="pk-o">No legends</div>';
+  pickPop.querySelectorAll('[data-v]').forEach(o => o.onclick = () => { state.trendLegend = o.dataset.v; closePick(); save(); renderBench(aggregate(), unitLabel()); });
+  const b = trendPick.getBoundingClientRect(), w = Math.max(b.width, 180);
+  pickPop.style.width = w + 'px';
+  pickPop.style.left = Math.max(8, Math.min(b.left, innerWidth - w - 8)) + 'px';
+  pickPop.style.top = (b.bottom + 4) + 'px';
+  pickPop.classList.add('open');
+};
+document.addEventListener('click', e => { if (!pickPop.contains(e.target) && !trendPick.contains(e.target)) closePick(); });
+window.addEventListener('scroll', e => { if (!pickPop.contains(e.target)) closePick(); }, true);
+
+/* growth balloon "▲ 0.0%" (colour scale) */
+function growthBall(cur, prev) {
+  if (!prev) return '';
+  const g = (cur - prev) / Math.abs(prev) * 100;
+  if (Math.abs(g) < 0.05) return '<span class="gr flat">– 0.0%</span>';
+  return g > 0 ? `<span class="gr up">▲ ${g.toFixed(1)}%</span>` : `<span class="gr down">▼ ${Math.abs(g).toFixed(1)}%</span>`;
+}
+/* yearly aggregates for the selected legend (years follow the Year slicer) */
+function trendData() {
+  const names = legendNames();
+  if (!names.includes(state.trendLegend)) state.trendLegend = names[0] || '';
+  const L = state.trendLegend, years = activeYears();
+  return { L, years, per: years.map(y => aggregate(state.rows.filter(r => r.legend.trim() === L && CATS.includes(r.cat) && yearKey(r) === y))[0] || null) };
+}
+const zeroAgg = { ROS: 0, Instrument: 0, Rental: 0, rosQty: 0, total: 0, rosAvgPrice: 0 };
+function renderTrend(U) {
+  const t = document.getElementById('bench');
+  const { L, years, per } = trendData();
+  paintPick();
+  document.getElementById('benchSub').textContent = `Revenue in ${U}`;
+  t.classList.add('trend');
+  if (!L || !years.length) { t.innerHTML = '<tbody><tr><td class="empty">No data</td></tr></tbody>'; renderTrendMobile(L, years, per); return; }
+  t.innerHTML = `
+    <thead><tr><th></th>${years.map(y => `<th class="num">${esc(y)}</th>`).join('')}</tr></thead>
+    <tbody>${ATTRS.map(at => `<tr><td>${at.name}</td>${years.map((y, j) => {
+      const v = at.val(per[j] || zeroAgg), pv = j ? at.val(per[j - 1] || zeroAgg) : null;
+      return `<td class="num">${fmt(v, at.dec)}${j ? growthBall(v, pv) : ''}</td>`;
+    }).join('')}</tr>`).join('')}</tbody>`;
+  renderTrendMobile(L, years, per);
+}
+function renderTrendMobile(L, years, per) {
+  const box = document.getElementById('benchMobile'), table = document.getElementById('bench');
+  if (!isPhonePortrait()) { box.innerHTML = ''; table.classList.remove('mobile-hidden'); return; }
+  table.classList.add('mobile-hidden');
+  if (!L || !years.length) { box.innerHTML = '<div class="empty">No data</div>'; return; }
+  box.innerHTML = years.map((y, j) => `
+    <div class="mc">
+      <div class="mc-head"><span class="mc-name">${esc(y)}</span></div>
+      <div class="mc-grid">${MX_ORDER.map(i => {
+        const at = ATTRS[i], v = at.val(per[j] || zeroAgg), pv = j ? at.val(per[j - 1] || zeroAgg) : null;
+        return `<div class="mc-cell"><span class="mc-l">${MX_SHORT[i]}</span><span class="mc-v">${fmt(v, at.dec)}${j ? growthBall(v, pv) : ''}</span></div>`;
+      }).join('')}</div>
+    </div>`).join('');
+}
+
 /* ----- Benchmarking ----- */
 function renderBench(data, U) {
+  if (state.mxMode === 'trend') { renderTrend(U); return; }
+  document.getElementById('bench').classList.remove('trend');
   document.getElementById('benchSub').textContent = `Revenue in ${U}`;
   const t = document.getElementById('bench');
   if (!data.length) { t.innerHTML = '<tbody><tr><td class="empty">No data</td></tr></tbody>'; renderBenchMobile(data); return; }
@@ -1310,26 +1773,32 @@ function renderBench(data, U) {
   renderBenchMobile(data);
 }
 
+/* each comparison pair must be two different legends */
+function fixPairs(names) {
+  if (!Array.isArray(state.cmp) || state.cmp.length !== 2) state.cmp = [['', ''], ['', '']];
+  const before = JSON.stringify(state.cmp);
+  state.cmp.forEach((p, k) => {
+    if (!names.includes(p[0])) p[0] = names[0];
+    if (!names.includes(p[1]) || p[1] === p[0]) p[1] = names.find((n, i) => n !== p[0] && i >= Math.min(k + 1, names.length - 1)) || names.find(n => n !== p[0]);
+  });
+  if (JSON.stringify(state.cmp) !== before) save();
+}
 /* ----- Comparison ----- */
 function renderCompare(data) {
   const t = document.getElementById('cmp');
   if (data.length < 2) { t.innerHTML = '<tbody><tr><td class="empty">Add at least 2 legends to compare</td></tr></tbody>'; renderCompareMobile(data); return; }
   const names = data.map(a => a.legend);
-  if (!Array.isArray(state.cmp) || state.cmp.length !== 2) state.cmp = [['', ''], ['', '']];
-  state.cmp.forEach((p, k) => {
-    if (!names.includes(p[0])) p[0] = names[0];
-    if (!names.includes(p[1])) p[1] = names[Math.min(k + 1, names.length - 1)];
-  });
+  fixPairs(names);
   const byName = n => data.find(a => a.legend === n);
-  const opts = cur => names.map(n => `<option ${n === cur ? 'selected' : ''}>${esc(n)}</option>`).join('');
+  const opts = (cur, other) => names.filter(n => n !== other).map(n => `<option ${n === cur ? 'selected' : ''}>${esc(n)}</option>`).join('');
   const cell = (at, [x, y]) => {
     const X = at.val(byName(x)), Y = at.val(byName(y)), d = X - Y, v = fmt(Math.abs(d), at.dec);
     if (Math.abs(d) < 1e-9) return `<span class="ball flat">– ${v} | 0%</span>`;
     const pct = Y ? `${d > 0 ? '+' : '-'}${fmt0(Math.abs(d / Y * 100))}%` : 'n/a';
     return d > 0 ? `<span class="ball up">▲ ${v} | ${pct}</span>` : `<span class="ball down">▼ ${v} | ${pct}</span>`;
   };
-  const head = k => `<th class="num"><select data-c="${k}" data-s="0">${opts(state.cmp[k][0])}</select>
-      <span class="sub"> vs </span><select data-c="${k}" data-s="1">${opts(state.cmp[k][1])}</select></th>`;
+  const head = k => `<th class="num"><select data-c="${k}" data-s="0">${opts(state.cmp[k][0], state.cmp[k][1])}</select>
+      <span class="sub"> vs </span><select data-c="${k}" data-s="1">${opts(state.cmp[k][1], state.cmp[k][0])}</select></th>`;
   t.innerHTML = `
     <thead><tr><th></th>${head(0)}${head(1)}</tr></thead>
     <tbody>${ATTRS.map(at => `<tr><td>${at.name}</td><td class="num">${cell(at, state.cmp[0])}</td><td class="num">${cell(at, state.cmp[1])}</td></tr>`).join('')}</tbody>`;
@@ -1343,14 +1812,26 @@ function renderCompare(data) {
    INIT
    ========================================================= */
 function renderAll() { renderInput(); renderDashboard(); }
-unitSel.value = state.unit; projIn.value = state.project || '';
-paintProject(); paintSwitch(); paintQtyMode(); paintYoy(); buildSlicer(); placeControls(); save();
+paintUnit(); projIn.value = state.project || '';
+paintProject(); paintSwitch(); paintQtyMode(); paintYoy(); paintPos(); paintMx(); buildSlicer(); placeControls(); save();
 setupSwipe('swCharts', 'dotsCharts'); setupSwipe('swMx', 'dotsMx');
 PORTRAIT_MQ.addEventListener('change', () => { placeControls(); renderDashboard(); });
 if (!storageOK) document.getElementById('storageWarn').classList.add('show');
 renderAll();
 let responsiveTimer;
-window.addEventListener('resize',()=>{clearTimeout(responsiveTimer);responsiveTimer=setTimeout(()=>{if(document.getElementById('page-dashboard').classList.contains('active')) renderDashboard();},180)});
+/* Mobile browsers fire "resize" while scrolling (address bar shows/hides).
+   Re-render only when the WIDTH changes, so charts do not blink on scroll. */
+let lastW = innerWidth;
+const setHdrH = () => document.documentElement.style.setProperty('--hdrH', document.querySelector('header').offsetHeight + 'px');
+setHdrH();
+window.addEventListener('resize', () => {
+  setHdrH();
+  if (innerWidth === lastW) return;
+  lastW = innerWidth;
+  clearTimeout(responsiveTimer);
+  responsiveTimer = setTimeout(() => { if (document.getElementById('page-dashboard').classList.contains('active')) renderDashboard(); }, 180);
+});
+PORTRAIT_MQ.addEventListener('change', setHdrH);
 </script>
 </body>
 </html>
