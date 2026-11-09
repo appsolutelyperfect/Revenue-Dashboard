@@ -102,8 +102,8 @@ main{flex:1 1 auto;min-height:0;padding:12px 24px 14px}
 .card{flex:0 1 320px;min-width:230px;background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .card .left{min-width:0;border-left:4px solid;border-radius:2px;padding-left:10px}
 .card .lg{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.card .tot{font-size:20px;font-weight:700;line-height:1.25;white-space:nowrap}
-.card .cur{font-size:11px;color:var(--muted);font-weight:600}
+.card .tot{font-size:20px;font-weight:700;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .cur{font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card .right{flex:0 0 auto;display:grid;grid-template-columns:auto auto;column-gap:10px;row-gap:2px;font-size:11.5px}
 .card .right span:nth-child(odd){color:var(--muted)}
 .card .right span:nth-child(even){text-align:right;font-weight:600}
@@ -265,13 +265,14 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
 .pos-head{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap}
 .pos-head h2{margin:0}
 .pos-head select{border:1px solid #E2DDF0;border-radius:999px;padding:3px 10px;height:26px;font:inherit;font-weight:700;color:var(--primary);background:var(--tint);cursor:pointer;min-width:0}
-/* D12: Comparison dropdowns. Custom control: a long Legend name wraps onto several lines and the box grows UPWARD
-   (the 26px slot it occupies never changes, so nothing below it is pushed down). */
+/* D13: Comparison dropdowns. Custom control: a long Legend name wraps onto several lines (max 4). The box sits in the normal
+   flow, so the header row, the Comparison card and its neighbour (Benchmarking) grow with it - nothing spills out of a card. */
 .cmp-wrap{overflow:visible}
-.cs{display:inline-grid;grid-template-columns:minmax(0,1fr);grid-template-rows:26px;width:fit-content;max-width:120px;vertical-align:middle;position:relative}
-.cs-b{align-self:end;position:relative;z-index:3;width:100%;min-height:26px;text-align:left;white-space:normal;overflow-wrap:anywhere;line-height:1.25;
-  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden;      /* up to 4 lines; full name in the tooltip and in the list */
-  border:1px solid #E2DDF0;border-radius:14px;background:var(--tint);color:var(--primary);font:inherit;font-weight:700;padding:5px 22px 6px 10px;cursor:pointer}
+.cs{display:inline-block;width:fit-content;max-width:120px;vertical-align:middle;position:relative}
+.cs-b{position:relative;z-index:3;display:block;width:100%;min-height:26px;text-align:left;
+  border:1px solid #E2DDF0;border-radius:14px;background:var(--tint);color:var(--primary);font:inherit;font-weight:700;padding:4px 22px 5px 10px;cursor:pointer}
+/* up to 4 lines (clamp is on the inner span so no part of a 5th line peeks into the padding); full name in the tooltip and the list */
+.cs-t{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden;white-space:normal;overflow-wrap:anywhere;line-height:1.25}
 .cs-b::after{content:'\25BE';position:absolute;right:8px;bottom:6px;font-size:9px;color:var(--muted)}
 #csPop{display:none;position:fixed;z-index:45;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(46,26,107,.16);padding:4px;max-height:260px;overflow:auto;font-size:12px}
 #csPop.open{display:block}
@@ -1364,12 +1365,36 @@ const FONT_R = () => '600 10px ' + css('--font');
 
 /* number of tests in the selected rounding unit, e.g. 25 '000 */
 const volTxt = v => fmtR(v) + (state.unit === 'K' ? " '000" : state.unit === 'M' ? ' M' : '');
-/* circle label (4 lines): Legend / revenue / avg price / volume */
-const bubbleLines = d => [d.label, 'Rev ' + fmtR(d.revenue), 'Price ' + fmt(d.price, 2), 'Vol ' + volTxt(d.volume)];
+/* Circle label (4 lines): Legend / revenue / price / volume.
+   The circle can never be larger than what the reference label needs ("Rev 26,000,000", the widest line of the AEC 2 example):
+   a long Legend name is cut with "…" (AEC 123…) and a long number wraps to K / M / B / T with the usual decimal rule.
+   The callout (hover / tap) still shows the full name and the full numbers. */
+const _mc = document.createElement('canvas').getContext('2d');
+const bubbleCapW = () => { _mc.font = FONT_R(); return _mc.measureText('Rev 26,000,000').width; };
+function bubbleLines(d) {
+  const W = bubbleCapW();
+  _mc.font = FONT_B();
+  let name = d.label;
+  if (_mc.measureText(name).width > W) {
+    while (name.length > 1 && _mc.measureText(name + '…').width > W) name = name.slice(0, -1);
+    name = name.trimEnd() + '…';
+  }
+  _mc.font = FONT_R();
+  /* shortest wrapping level whose text fits W; base = the unit the value is expressed in */
+  const wrap = (pre, v, full, base) => {
+    const m = LV_MAX(base);
+    for (let L = 0; L <= m; L++) { const t = pre + (L ? lvlText(v, L, base) : full); if (_mc.measureText(t).width <= W || L === m) return t; }
+  };
+  const sfx = state.unit === 'K' ? " '000" : state.unit === 'M' ? ' M' : '';
+  return [name,
+    wrap('Rev ', d.revenue, fmtR(d.revenue), state.unit),
+    wrap('Price ', d.price, fmt(d.price, 2), 'none'),
+    wrap('Vol ', d.volume, fmtR(d.volume) + sfx, state.unit)];
+}
 function bubbleRadius(d) {
-  const c = document.createElement('canvas').getContext('2d'), L = bubbleLines(d);
-  c.font = FONT_B(); const w0 = c.measureText(L[0]).width;
-  c.font = FONT_R(); const w = Math.max(w0, ...L.slice(1).map(t => c.measureText(t).width));
+  const L = bubbleLines(d);
+  _mc.font = FONT_B(); let w = _mc.measureText(L[0]).width;
+  _mc.font = FONT_R(); L.slice(1).forEach(t => { w = Math.max(w, _mc.measureText(t).width); });
   return Math.ceil(Math.sqrt((w / 2) ** 2 + 28 ** 2)) + 6;
 }
 const scatterLabels = {
@@ -1395,6 +1420,18 @@ const scatterLabels = {
 /** Revenue Mix labels: segment values, column total on top, year under each column */
 /* Chart label: full number if it fits; otherwise K / M (M with 1 decimal). Values already in the selected unit. */
 const valTxt = v => state.unit === 'M' ? fmt(v, 1) : fmt0(v);     // full number for callouts
+/* Wrapping steps, same decimal rule as the other numbers (K: 0 decimals, M / B / T: 1 decimal).
+   No rounding : full -> K -> M -> B -> T      Thousands : full -> M -> B -> T      Millions : full -> B -> T          */
+const LV_MAX = (base = state.unit) => ({ none: 4, K: 3, M: 2 })[base];
+function lvlText(v, L, base = state.unit) {
+  const SC  = base === 'none' ? [1, 1e3, 1e6, 1e9, 1e12] : base === 'K' ? [1, 1e3, 1e6, 1e9] : [1, 1e3, 1e6];
+  const SUF = base === 'none' ? ['', 'K', 'M', 'B', 'T'] : base === 'K' ? ['', 'M', 'B', 'T'] : ['', 'B', 'T'];
+  L = Math.min(L, SC.length - 1);
+  /* a value never wraps past its own size (4,000,000 stays 4.0M next to 21.0T instead of becoming 0.0T) */
+  while (L > 0 && Math.abs(v) / SC[L] < (base === 'none' && L === 1 ? 1 : 0.1)) L--;
+  if (!L || !v) return fmt(v, base === 'M' ? 1 : 0);
+  return fmt(v / SC[L], base === 'none' && L === 1 ? 0 : 1) + SUF[L];
+}
 /* Wrapping level: 0 = full number, 1 = K, 2 = M  (depends on the selected rounding unit) */
 function numLevel(ctx, v, maxW) {
   const full = state.unit === 'M' ? fmt(v, 1) : fmt0(v);
@@ -1569,13 +1606,15 @@ function renderDashboard() {
     <div class="card">
       <div class="left" style="border-color:${a.color}">
         <div class="lg" style="color:${a.color}" title="${esc(a.legend)}">${esc(a.legend)}</div>
-        <div class="tot ${fmtR(rev(a.total)).length > 12 ? 'xl' : fmtR(rev(a.total)).length > 9 ? 'lg2' : ''}">${fmtR(rev(a.total))}</div>
+        <div class="tot" data-v="${rev(a.total)}"></div>
         <div class="cur">Total Revenue (${U})</div>
       </div>
       <div class="right">
-        ${CATS.map(c => `<span><i class="dot" style="background:${CAT_COLOR[c]}"></i><b class="lf">${c}</b><b class="ls">${c === 'Instrument' ? 'Instr.' : c}</b></span><span>${fmtR(rev(a[c]))}</span>`).join('')}
+        ${CATS.map(c => `<span><i class="dot" style="background:${CAT_COLOR[c]}"></i><b class="lf">${c}</b><b class="ls">${c === 'Instrument' ? 'Instr.' : c}</b></span><span class="cv" data-v="${rev(a[c])}"></span>`).join('')}
       </div>
     </div>`).join('') : '<div class="card"><span class="empty">No data yet. Add rows in Data Input.</span></div>';
+
+  fitCards(U);
 
   /* ----- Positioning scatter (ROS, selected years in total): any two of Price / Volume / Revenue ----- */
   const pts = data.filter(a => a.rosQty > 0).map(a => {
@@ -1676,8 +1715,57 @@ function renderDashboard() {
 
   renderBench(data, U);
   renderCompare(data);
+  afterMx();
 }
 
+
+/* Revenue cards. The right-hand figures (ROS / Instr. / Rental) are the first to be wrapped to K / M / B / T when they would
+   squeeze the left part. The left part (Legend name, total, "Total Revenue" label) keeps its room; the total is wrapped only when
+   it cannot fit even then. Full values stay available as a tooltip. */
+function fitCards(U) {
+  const mob = isPhonePortrait();
+  document.querySelectorAll('#cards .card').forEach(card => {
+    const left = card.querySelector('.left'), lg = card.querySelector('.lg'), tot = card.querySelector('.tot'), cur = card.querySelector('.cur');
+    const cvs = [...card.querySelectorAll('.cv')], max = LV_MAX();
+    if (!tot) return;
+    const rg = document.createRange(); rg.selectNodeContents(lg);
+    const lgMin = Math.min(rg.getBoundingClientRect().width, mob ? 44 : 70);        // at least the start of the Legend name stays visible
+    const set = (L, Lt) => {
+      const tv = +tot.dataset.v; tot.textContent = lvlText(tv, Lt); tot.title = fmtR(tv) + ' ' + U;
+      cvs.forEach(c => { const v = +c.dataset.v; c.textContent = lvlText(v, L); c.title = fmtR(v) + ' ' + U; });
+    };
+    const fits = strict => tot.scrollWidth <= tot.clientWidth + 1 && (!strict || cur.scrollWidth <= cur.clientWidth + 1) && left.clientWidth >= lgMin;
+    for (const strict of [true, false]) {
+      for (let L = 0; L <= max; L++) { set(L, 0); if (fits(strict)) return; }     // 1) only the right figures wrap
+      for (let c = 1; c <= max; c++) { set(c, c); if (fits(strict)) return; }     // 2) the total wraps too, at the same level
+    }
+    set(max, max);
+  });
+}
+
+/* Benchmarking + Comparison share the bottom row: their header rows get the same height (so attribute lines stay aligned),
+   and when a Comparison dropdown grows taller the whole row (both cards) grows with it instead of spilling out. */
+function syncMxHeads() {
+  const ths = [...document.querySelectorAll('#bench thead th, #cmp thead th')];
+  ths.forEach(th => th.style.height = '');
+  const b = document.querySelector('#bench thead tr'), c = document.querySelector('#cmp thead tr');
+  if (isPhonePortrait() || !b || !c) return;
+  const h = Math.max(b.getBoundingClientRect().height, c.getBoundingClientRect().height);
+  ths.forEach(th => th.style.height = h + 'px');
+}
+function fitQuad() {
+  const quad = document.querySelector('.quad'); if (!quad) return;
+  quad.style.gridTemplateRows = '';
+  if (isPhonePortrait()) return;
+  const panels = [...document.querySelectorAll('#swMx .panel')]; if (!panels.length) return;
+  const need = Math.max(...panels.map(p => { const tw = p.querySelector('.tbl-wrap'); return Math.max(p.scrollHeight, p.clientHeight - tw.clientHeight + tw.scrollHeight); }));
+  const have = Math.min(...panels.map(p => p.clientHeight));
+  if (need > have + 1) {
+    const room = quad.clientHeight - 12 - 200;               // keep at least 200px for the two charts
+    quad.style.gridTemplateRows = `minmax(0,1fr) ${Math.ceil(Math.min(need, Math.max(room, have)))}px`;
+  }
+}
+const afterMx = () => { syncMxHeads(); fitQuad(); };
 
 /* Update an existing chart in place (no destroy / re-create) so it does not blink */
 const anim = () => isPhonePortrait() ? false : { duration: 300 };
@@ -1792,7 +1880,7 @@ function renderTrend(U) {
   paintPick();
   document.getElementById('benchSub').textContent = `Revenue in ${U}`;
   t.classList.add('trend');
-  if (!L || !years.length) { t.innerHTML = '<tbody><tr><td class="empty">No data</td></tr></tbody>'; renderTrendMobile(L, years, per); return; }
+  if (!L || !years.length) { t.innerHTML = '<tbody><tr><td class="empty">No data</td></tr></tbody>'; renderTrendMobile(L, years, per); afterMx(); return; }
   t.innerHTML = `
     <thead><tr><th></th>${years.map(y => `<th class="num">${esc(y)}</th>`).join('')}</tr></thead>
     <tbody>${ATTRS.map(at => `<tr><td>${at.name}</td>${years.map((y, j) => {
@@ -1800,6 +1888,7 @@ function renderTrend(U) {
       return `<td class="num">${fmt(v, at.dec)}${j ? growthBall(v, pv) : ''}</td>`;
     }).join('')}</tr>`).join('')}</tbody>`;
   renderTrendMobile(L, years, per);
+  afterMx();
 }
 function renderTrendMobile(L, years, per) {
   const box = document.getElementById('benchMobile'), table = document.getElementById('bench');
@@ -1822,7 +1911,7 @@ function renderBench(data, U) {
   document.getElementById('bench').classList.remove('trend');
   document.getElementById('benchSub').textContent = `Revenue in ${U}`;
   const t = document.getElementById('bench');
-  if (!data.length) { t.innerHTML = '<tbody><tr><td class="empty">No data</td></tr></tbody>'; renderBenchMobile(data); return; }
+  if (!data.length) { t.innerHTML = '<tbody><tr><td class="empty">No data</td></tr></tbody>'; renderBenchMobile(data); afterMx(); return; }
   t.innerHTML = `
     <thead><tr><th></th>${data.map(a => `<th class="num"><i class="dot" style="background:${a.color}"></i>${esc(a.legend)}</th>`).join('')}</tr></thead>
     <tbody>${ATTRS.map(at => {
@@ -1834,6 +1923,7 @@ function renderBench(data, U) {
       }).join('')}</tr>`;
     }).join('')}</tbody>`;
   renderBenchMobile(data);
+  afterMx();
 }
 
 /* each comparison pair must be two different legends */
@@ -1848,7 +1938,7 @@ function fixPairs(names) {
 }
 /* ----- Comparison dropdowns (custom; see CSS .cs) ----- */
 const csPop = document.getElementById('csPop');
-const csBtn = (k, s, cur) => `<span class="cs"><button type="button" class="cs-b" data-c="${k}" data-s="${s}" title="${esc(cur)}">${esc(cur)}</button></span>`;
+const csBtn = (k, s, cur) => `<span class="cs"><button type="button" class="cs-b" data-c="${k}" data-s="${s}" title="${esc(cur)}"><span class="cs-t">${esc(cur)}</span></button></span>`;
 function closeCs() { csPop.classList.remove('open'); csPop._btn = null; }
 function bindCs(root, names) {
   root.querySelectorAll('.cs-b').forEach(btn => btn.onclick = e => {
@@ -1872,7 +1962,7 @@ window.addEventListener('scroll', e => { if (!csPop.contains(e.target)) closeCs(
 /* ----- Comparison ----- */
 function renderCompare(data) {
   const t = document.getElementById('cmp');
-  if (data.length < 2) { t.innerHTML = '<tbody><tr><td class="empty">Add at least 2 legends to compare</td></tr></tbody>'; renderCompareMobile(data); return; }
+  if (data.length < 2) { t.innerHTML = '<tbody><tr><td class="empty">Add at least 2 legends to compare</td></tr></tbody>'; renderCompareMobile(data); afterMx(); return; }
   const names = data.map(a => a.legend);
   fixPairs(names);
   const byName = n => data.find(a => a.legend === n);
@@ -1889,6 +1979,7 @@ function renderCompare(data) {
     <tbody>${ATTRS.map(at => `<tr><td>${at.name}</td><td class="num">${cell(at, state.cmp[0])}</td><td class="num">${cell(at, state.cmp[1])}</td></tr>`).join('')}</tbody>`;
   bindCs(t, names);
   renderCompareMobile(data);
+  afterMx();
 }
 
 /* =========================================================
@@ -1914,6 +2005,7 @@ window.addEventListener('resize', () => {
   clearTimeout(responsiveTimer);
   responsiveTimer = setTimeout(() => { if (document.getElementById('page-dashboard').classList.contains('active')) renderDashboard(); }, 180);
 });
+window.addEventListener('resize', () => { if (document.getElementById('page-dashboard').classList.contains('active')) fitQuad(); });
 PORTRAIT_MQ.addEventListener('change', setHdrH);
 </script>
 </body>
