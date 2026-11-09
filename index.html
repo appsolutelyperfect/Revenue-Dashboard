@@ -216,6 +216,9 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
 #inputTable .frow .inp{padding:5px 10px;font-size:11.5px;font-weight:400}
 #fltClear{border:0;background:var(--bad-bg);color:var(--bad);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:15px;line-height:1}
 #legendMenu .opt.cur{background:var(--tint);color:var(--primary);font-weight:700}
+/* phone: the list is a child of the Legend box, so it scrolls with the page (no JS repositioning, no lag) */
+#legendMenu.inflow{position:absolute;left:0;right:0;top:calc(100% + 4px);width:auto;z-index:20}
+#legendMenu.inflow.up{top:auto;bottom:calc(100% + 4px)}
 /* D6: Data buttons - separate on desktop / landscape, one 'Data' menu on phone portrait */
 .mob-only{display:none}
 /* D6: multi-select filter dropdowns */
@@ -262,6 +265,19 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
 .pos-head{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap}
 .pos-head h2{margin:0}
 .pos-head select{border:1px solid #E2DDF0;border-radius:999px;padding:3px 10px;height:26px;font:inherit;font-weight:700;color:var(--primary);background:var(--tint);cursor:pointer;min-width:0}
+/* D12: Comparison dropdowns. Custom control: a long Legend name wraps onto several lines and the box grows UPWARD
+   (the 26px slot it occupies never changes, so nothing below it is pushed down). */
+.cmp-wrap{overflow:visible}
+.cs{display:inline-grid;grid-template-columns:minmax(0,1fr);grid-template-rows:26px;width:fit-content;max-width:120px;vertical-align:middle;position:relative}
+.cs-b{align-self:end;position:relative;z-index:3;width:100%;min-height:26px;text-align:left;white-space:normal;overflow-wrap:anywhere;line-height:1.25;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden;      /* up to 4 lines; full name in the tooltip and in the list */
+  border:1px solid #E2DDF0;border-radius:14px;background:var(--tint);color:var(--primary);font:inherit;font-weight:700;padding:5px 22px 6px 10px;cursor:pointer}
+.cs-b::after{content:'\25BE';position:absolute;right:8px;bottom:6px;font-size:9px;color:var(--muted)}
+#csPop{display:none;position:fixed;z-index:45;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(46,26,107,.16);padding:4px;max-height:260px;overflow:auto;font-size:12px}
+#csPop.open{display:block}
+#csPop .cs-o{padding:7px 10px;border-radius:8px;cursor:pointer;white-space:normal;overflow-wrap:anywhere;line-height:1.3}
+#csPop .cs-o:hover{background:var(--tint)}
+#csPop .cs-o.cur{background:var(--tint);color:var(--primary);font-weight:700}
 /* D7: Comparison dropdowns - light background */
 .cmp select{background:var(--tint)!important;border-color:#E2DDF0!important;color:var(--primary)}
 /* =========================================================
@@ -331,7 +347,8 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
   .mc{background:#FBFAFD;border:1px solid var(--line);border-radius:10px;padding:7px 9px}
   .mc-head{display:flex;align-items:center;gap:6px;font-weight:700;font-size:12px;margin-bottom:4px;min-width:0}
   .mc-name{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .mc-head select{flex:1;min-width:0;border:1px solid #E2DDF0;border-radius:999px;padding:4px 8px;font:inherit;font-size:11.5px;font-weight:700;background:var(--tint);color:var(--primary)}
+  .mc-head .cs{flex:1 1 0;min-width:0;max-width:none;width:auto}
+  .mc-head .cs-b{font-size:11.5px}
   .mx-tools{flex-wrap:wrap}
   #mxSwitch{font-size:10.5px}#mxSwitch span{padding:3px 8px}
   .mc .gr{font-size:9.5px;padding:1px 5px;margin-left:4px}
@@ -502,6 +519,7 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
 <div id="legendMenu" class="no-export"></div>
 <div id="mselPop" class="no-export"></div>
 <div id="pickPop" class="no-export"></div>
+<div id="csPop" class="no-export"></div>
 <!-- Data file menu (hidden) -->
 <div class="pop no-export" id="fileMenu">
   <button type="button" data-act="btnTemplate">Download Template</button>
@@ -550,7 +568,7 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
       </div>
       <div class="panel">
         <div class="panel-head mtx-head"><h2>Comparison</h2></div>
-        <div class="tbl-wrap"><table class="mtx cmp" id="cmp"></table><div class="mobile-matrix" id="cmpMobile"></div></div>
+        <div class="tbl-wrap cmp-wrap"><table class="mtx cmp" id="cmp"></table><div class="mobile-matrix" id="cmpMobile"></div></div>
       </div>
       </div>
       <div class="dots" id="dotsMx"></div>
@@ -1045,11 +1063,24 @@ function openMenu(inp, showAll) {
   menuInput = inp;
   menu.innerHTML = names.map(n => `<div class="opt ${n === cur ? 'cur' : ''}" data-v="${esc(n)}"><i class="dot" style="background:${dispColor(n)}"></i>${esc(n)}</div>`).join('');
   menu.classList.add('open');
-  placeMenu();
+  if (PORTRAIT_MQ.matches) {
+    const host = inp.closest('.combo');
+    if (menu.parentElement !== host) host.appendChild(menu);
+    menu.style.left = menu.style.top = menu.style.width = menu.style.visibility = '';
+    menu.classList.add('inflow'); menu.classList.remove('up');
+    /* flip above the box only when there is no room below but enough room above (once, at open time) */
+    const b = host.getBoundingClientRect(), vh = window.visualViewport ? visualViewport.height : innerHeight, h = Math.min(menu.scrollHeight, 220) + 8;
+    const hdr = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hdrH')) || 0;
+    if (vh - b.bottom < h && b.top - hdr > h) menu.classList.add('up');
+  } else {
+    if (menu.parentElement !== document.body) document.body.appendChild(menu);
+    menu.classList.remove('inflow', 'up');
+    placeMenu();
+  }
 }
 /* keep the list attached to its Legend field while the page / table scrolls or the phone keyboard opens */
 function placeMenu() {
-  if (!menuInput || !menu.classList.contains('open')) return;
+  if (!menuInput || !menu.classList.contains('open') || menu.classList.contains('inflow')) return;
   const b = menuInput.getBoundingClientRect();
   if (b.bottom < 0 || b.top > innerHeight) { menu.style.visibility = 'hidden'; return; }
   menu.style.visibility = '';
@@ -1057,7 +1088,7 @@ function placeMenu() {
   const top = (below < h + 8 && b.top > h + 8) ? b.top - h - 4 : b.bottom + 4;
   menu.style.left = b.left + 'px'; menu.style.top = top + 'px'; menu.style.width = Math.max(b.width, 160) + 'px';
 }
-function closeMenu() { menu.classList.remove('open'); menuInput = null; }
+function closeMenu() { menu.classList.remove('open', 'inflow', 'up'); menuInput = null; if (menu.parentElement !== document.body) document.body.appendChild(menu); }
 menu.addEventListener('mousedown', e => {
   const o = e.target.closest('.opt'); if (!o || !menuInput) return;
   e.preventDefault();
@@ -1219,6 +1250,14 @@ function paintColourCell(tr, legend) {
   sel.disabled = !has; sel.innerHTML = colourOptions(c);
 }
 
+/* Rename a Legend everywhere: all rows with that name, its colour, the Trending pick, Comparison pairs and the Legend filter */
+function renameLegend(old, nu, except) {
+  state.rows.forEach(x => { if (x !== except && x.legend.trim() === old) x.legend = nu; });
+  if (state.colors[old] !== undefined) { if (!state.colors[nu]) state.colors[nu] = state.colors[old]; delete state.colors[old]; }
+  if (state.trendLegend === old) state.trendLegend = nu;
+  (state.cmp || []).forEach(p => { if (p[0] === old) p[0] = nu; if (p[1] === old) p[1] = nu; });
+  if (fltSel.legend.has(old)) { fltSel.legend.delete(old); fltSel.legend.add(nu); }
+}
 function renderInput() {
   closeMenu();
   tbody.innerHTML = '';
@@ -1245,16 +1284,27 @@ function renderInput() {
 
     /* Legend: typing does not assign a colour; colour is auto-picked once when the Legend is committed */
     const lg = tr.querySelector('[data-f="legend"]');
+    lg._orig = r.legend.trim();                                   // the committed name (r.legend changes while typing)
     lg._commit = () => {
-      r.legend = lg.value.trim();
-      if (r.legend && !colorOf(r.legend)) state.colors[r.legend] = nextColour();
+      const nu = lg.value.trim(), old = lg._orig || '';
+      r.legend = nu;
+      let others = 0;
+      /* a changed name is applied to ALL rows that had the old name. Exception: when the new name is already a Legend
+         used by other rows, only this row moves to it (re-assigning one row must not merge the whole group). */
+      if (old && nu && old !== nu && !state.rows.some(x => x !== r && x.legend.trim() === nu)) {
+        others = state.rows.filter(x => x !== r && x.legend.trim() === old).length;
+        renameLegend(old, nu, r);
+      }
+      if (nu && !colorOf(nu)) state.colors[nu] = nextColour();
+      lg._orig = nu;
       save(); renderInput();
+      if (others) toast(`Renamed "${old}" to "${nu}" in ${others + 1} rows.`);
     };
     lg.addEventListener('input', () => {
       r.legend = lg.value; lg.classList.toggle('invalid', !lg.value.trim());
       paintColourCell(tr, r.legend); save(); openMenu(lg);
     });
-    lg.addEventListener('focus', () => openMenu(lg));
+    lg.addEventListener('focus', () => { lg._orig = r.legend.trim(); openMenu(lg); });
     lg.addEventListener('blur', () => setTimeout(() => { if (menuInput === lg) closeMenu(); }, 150));
     lg.addEventListener('change', () => lg._commit());
     lg.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
@@ -1324,11 +1374,19 @@ function bubbleRadius(d) {
 }
 const scatterLabels = {
   id: 'scatterLabels',
+  /* Circles are drawn in data order (later = in front). Each circle is re-painted just before its own label, so a circle in front
+     covers the label of any circle behind it instead of letting that text show through. */
   afterDatasetsDraw(chart) {
-    const { ctx } = chart, ds = chart.data.datasets[0];
-    ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff';
-    chart.getDatasetMeta(0).data.forEach((pt, i) => {
-      bubbleLines(ds.data[i]).forEach((t, k) => { ctx.font = k === 0 ? FONT_B() : FONT_R(); ctx.fillText(t, pt.x, pt.y + (k - 1.5) * 14); });
+    const { ctx } = chart, ds = chart.data.datasets[0], els = chart.getDatasetMeta(0).data;
+    ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    els.forEach((pt, i) => {
+      const d = ds.data[i], o = pt.options || {};
+      const r = o.radius != null ? o.radius : (Array.isArray(ds.pointRadius) ? ds.pointRadius[i] : ds.pointRadius);
+      ctx.beginPath(); ctx.arc(pt.x, pt.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = d.color; ctx.fill();
+      ctx.lineWidth = 2; ctx.strokeStyle = '#fff'; ctx.stroke();
+      ctx.fillStyle = '#fff';
+      bubbleLines(d).forEach((t, k) => { ctx.font = k === 0 ? FONT_B() : FONT_R(); ctx.fillText(t, pt.x, pt.y + (k - 1.5) * 14); });
     });
     ctx.restore();
   }
@@ -1664,10 +1722,10 @@ function renderCompareMobile(data) {
   /* 2 comparison cards (same buckets as the normal view) */
   box.innerHTML = state.cmp.map((pair, k) => `
     <div class="mc">
-      <div class="mc-head"><select data-c="${k}" data-s="0">${opts(pair[0], pair[1])}</select><span class="sub">vs</span><select data-c="${k}" data-s="1">${opts(pair[1], pair[0])}</select></div>
+      <div class="mc-head">${csBtn(k, 0, pair[0])}<span class="sub">vs</span>${csBtn(k, 1, pair[1])}</div>
       <div class="mc-grid">${MX_ORDER.map(i => `<div class="mc-cell"><span class="mc-l">${MX_SHORT[i]}</span><span class="mc-v">${cell(ATTRS[i], pair)}</span></div>`).join('')}</div>
     </div>`).join('');
-  box.querySelectorAll('select').forEach(sel => sel.onchange = () => { state.cmp[+sel.dataset.c][+sel.dataset.s] = sel.value; save(); renderCompare(aggregate()); });
+  bindCs(box, names);
 }
 
 /* ----- Swipe dots (mobile portrait) ----- */
@@ -1788,6 +1846,29 @@ function fixPairs(names) {
   });
   if (JSON.stringify(state.cmp) !== before) save();
 }
+/* ----- Comparison dropdowns (custom; see CSS .cs) ----- */
+const csPop = document.getElementById('csPop');
+const csBtn = (k, s, cur) => `<span class="cs"><button type="button" class="cs-b" data-c="${k}" data-s="${s}" title="${esc(cur)}">${esc(cur)}</button></span>`;
+function closeCs() { csPop.classList.remove('open'); csPop._btn = null; }
+function bindCs(root, names) {
+  root.querySelectorAll('.cs-b').forEach(btn => btn.onclick = e => {
+    e.stopPropagation();
+    if (csPop.classList.contains('open') && csPop._btn === btn) { closeCs(); return; }
+    const k = +btn.dataset.c, s = +btn.dataset.s, cur = state.cmp[k][s], other = state.cmp[k][1 - s];
+    csPop._btn = btn;
+    /* a Legend can never be compared with itself: the other side's choice is not offered */
+    csPop.innerHTML = names.filter(n => n !== other).map(n => `<div class="cs-o ${n === cur ? 'cur' : ''}" data-v="${esc(n)}">${esc(n)}</div>`).join('');
+    csPop.querySelectorAll('.cs-o').forEach(o => o.onclick = () => { state.cmp[k][s] = o.dataset.v; closeCs(); save(); renderCompare(aggregate()); });
+    const slot = btn.parentElement.getBoundingClientRect(), grown = btn.getBoundingClientRect(), w = Math.max(slot.width, 170);
+    csPop.style.width = w + 'px'; csPop.classList.add('open');
+    const h = Math.min(csPop.scrollHeight, 260);
+    csPop.style.left = Math.max(8, Math.min(slot.left, innerWidth - w - 8)) + 'px';
+    csPop.style.top = (slot.bottom + 4 + h <= innerHeight - 8 ? slot.bottom + 4 : Math.max(8, grown.top - h - 4)) + 'px';
+  });
+}
+document.addEventListener('click', e => { if (!csPop.contains(e.target)) closeCs(); });
+window.addEventListener('scroll', e => { if (!csPop.contains(e.target)) closeCs(); }, true);
+
 /* ----- Comparison ----- */
 function renderCompare(data) {
   const t = document.getElementById('cmp');
@@ -1802,14 +1883,11 @@ function renderCompare(data) {
     const pct = Y ? `${d > 0 ? '+' : '-'}${fmt0(Math.abs(d / Y * 100))}%` : 'n/a';
     return d > 0 ? `<span class="ball up">▲ ${v} | ${pct}</span>` : `<span class="ball down">▼ ${v} | ${pct}</span>`;
   };
-  const head = k => `<th class="num"><select data-c="${k}" data-s="0">${opts(state.cmp[k][0], state.cmp[k][1])}</select>
-      <span class="sub"> vs </span><select data-c="${k}" data-s="1">${opts(state.cmp[k][1], state.cmp[k][0])}</select></th>`;
+  const head = k => `<th class="num">${csBtn(k, 0, state.cmp[k][0])}<span class="sub"> vs </span>${csBtn(k, 1, state.cmp[k][1])}</th>`;
   t.innerHTML = `
     <thead><tr><th></th>${head(0)}${head(1)}</tr></thead>
     <tbody>${ATTRS.map(at => `<tr><td>${at.name}</td><td class="num">${cell(at, state.cmp[0])}</td><td class="num">${cell(at, state.cmp[1])}</td></tr>`).join('')}</tbody>`;
-  t.querySelectorAll('select').forEach(s => s.onchange = () => {
-    state.cmp[+s.dataset.c][+s.dataset.s] = s.value; save(); renderCompare(aggregate());
-  });
+  bindCs(t, names);
   renderCompareMobile(data);
 }
 
