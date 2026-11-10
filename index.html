@@ -495,6 +495,10 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
     <button class="icon-btn no-export" id="btnMore" type="button" title="Menu" aria-label="Menu">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
     </button>
+    <button class="icon-btn no-export" id="btnFullscreen" title="Full screen" aria-label="Enter full screen">
+      <svg class="fs-enter" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg>
+      <svg class="fs-exit" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M3 8h5V3M21 8h-5V3M3 16h5v5M21 16h-5v5"/></svg>
+    </button>
     <button class="icon-btn no-export" id="btnSettings" title="Settings" aria-label="Settings">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
@@ -823,6 +827,31 @@ document.getElementById('btnMore').onclick = e => {
 };
 document.addEventListener('click', e => { if (!moreMenu.contains(e.target)) moreMenu.classList.remove('open'); });
 
+/* ---------- Full screen ---------- */
+const fsBtn = document.getElementById('btnFullscreen');
+const fullscreenEl = () => document.fullscreenElement || document.webkitFullscreenElement;
+function paintFullscreen() {
+  const on = !!fullscreenEl();
+  fsBtn.querySelector('.fs-enter').style.display = on ? 'none' : '';
+  fsBtn.querySelector('.fs-exit').style.display = on ? '' : 'none';
+  fsBtn.title = on ? 'Exit full screen' : 'Full screen';
+  fsBtn.setAttribute('aria-label', on ? 'Exit full screen' : 'Enter full screen');
+}
+fsBtn.onclick = async e => {
+  e.stopPropagation();
+  try {
+    if (!fullscreenEl()) {
+      const req = document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen;
+      if (req) await req.call(document.documentElement);
+    } else {
+      const exit = document.exitFullscreen || document.webkitExitFullscreen;
+      if (exit) await exit.call(document);
+    }
+  } catch (_) { toast('Full screen is not available in this browser view.'); }
+  paintFullscreen();
+};
+document.addEventListener('fullscreenchange', paintFullscreen);
+document.addEventListener('webkitfullscreenchange', paintFullscreen);
 const setPop = document.getElementById('settings'), expPop = document.getElementById('exportMenu');
 const rateIn = document.getElementById('rate'), rateErr = document.getElementById('rateErr');
 document.getElementById('btnSettings').onclick = e => {
@@ -1442,7 +1471,7 @@ function lvlText(v, L, base = state.unit) {
   /* a value never wraps past its own size (4,000,000 stays 4.0M next to 21.0T instead of becoming 0.0T) */
   while (L > 0 && Math.abs(v) / SC[L] < (base === 'none' && L === 1 ? 1 : 0.1)) L--;
   if (!L || !v) return fmt(v, base === 'M' ? 1 : 0) + (base === 'K' ? ' K' : '');
-  return fmt(v / SC[L], base === 'none' && L === 1 ? 0 : 1) + SUF[L];
+  return fmt(v / SC[L], base === 'none' && L === 1 ? 0 : 1) + ' ' + SUF[L];
 }
 /* Wrapping level: 0 = full number, 1 = K, 2 = M  (depends on the selected rounding unit) */
 function numLevel(ctx, v, maxW) {
@@ -1455,15 +1484,15 @@ function numLevel(ctx, v, maxW) {
 }
 function numAt(v, lvl) {
   if (!lvl) return chartBaseTxt(v);
-  if (state.unit === 'none') return lvl === 2 ? fmt(v / 1e6, 1) + 'M' : fmt0(v / 1e3) + 'K';
-  return fmt(v / 1e3, 1) + 'M';                                     // unit K -> M
+  if (state.unit === 'none') return lvl === 2 ? fmt(v / 1e6, 1) + ' M' : fmt0(v / 1e3) + ' K';
+  return fmt(v / 1e3, 1) + ' M';                                     // unit K -> M
 }
 function chartNum(ctx, v, maxW) {
   const full = chartBaseTxt(v);
   if (ctx.measureText(full).width <= maxW) return full;
   const a = Math.abs(v);
-  if (state.unit === 'none') { if (a >= 1e6) return fmt(v / 1e6, 1) + 'M'; if (a >= 1e3) return fmt0(v / 1e3) + 'K'; }
-  if (state.unit === 'K' && a >= 1e3) return fmt(v / 1e3, 1) + 'M';
+  if (state.unit === 'none') { if (a >= 1e6) return fmt(v / 1e6, 1) + ' M'; if (a >= 1e3) return fmt0(v / 1e3) + ' K'; }
+  if (state.unit === 'K' && a >= 1e3) return fmt(v / 1e3, 1) + ' M';
   return full;
 }
 const stackLabels = {
@@ -1498,14 +1527,7 @@ const stackLabels = {
         segs.push({ ds, i, v, bar, h, g });
       });
     });
-    /* The column total participates in the same wrapping decision. If the total above the column needs K/M,
-       every visible category inside that column uses that same level too (e.g. total 5.0 M => 2.5 M / 2.5 M). */
-    groups.forEach(g => {
-      if (g.tot <= 0) return;
-      ctx.font = '700 11px ' + css('--font');
-      g.lvl = Math.max(g.lvl, numLevel(ctx, g.tot, g.w - 2));
-    });
-    /* pass 2: total + every category in one column now share exactly one wrapping level */
+    /* pass 2: every category in the same column uses the same wrapping (e.g. 15.0M / 2.5M / 0.2M) */
     segs.forEach(({ ds, i, v, bar, h, g }) => {
       const mid = (bar.y + bar.base) / 2;
       ctx.font = FONT_R(); ctx.fillStyle = '#fff';
@@ -1524,8 +1546,8 @@ const stackLabels = {
     groups.forEach(g => {
       if (g.tot <= 0) return;
       ctx.font = '700 11px ' + css('--font'); ctx.fillStyle = css('--text');
-      /* total uses the SAME level already selected for its category labels */
-      const tt = numAt(g.tot, g.lvl), tw = ctx.measureText(tt).width;
+      /* same wrapping rule as the column labels: full number if it fits the column width, else K / M */
+      const tt = chartNum(ctx, g.tot, g.w - 2), tw = ctx.measureText(tt).width;
       ctx.fillText(tt, g.x, g.top - 10);
       chart.$tot.push({ x1: g.x - Math.max(tw, 14) / 2 - 4, x2: g.x + Math.max(tw, 14) / 2 + 4, y1: g.top - 20, y2: g.top, ds: g.ds, idx: g.idx, tot: g.tot });
       ctx.font = '600 10px ' + css('--font'); ctx.fillStyle = css('--muted');
