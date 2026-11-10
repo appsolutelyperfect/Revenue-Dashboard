@@ -108,7 +108,6 @@ main{flex:1 1 auto;min-height:0;padding:12px 24px 14px}
 .card .right span:nth-child(odd){color:var(--muted)}
 .card .right span:nth-child(even){text-align:right;font-weight:600}
 .card .right b{font-weight:inherit}.card .right .ls{display:none}
-.card .cur .ls{display:none}
 
 /* 2 x 2 quadrants with equal height and width */
 .quad{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:12px}
@@ -262,28 +261,17 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
 .gr.down{background:var(--bad-bg);color:var(--bad)}
 .gr.flat{background:var(--bg);color:var(--muted)}
 .mtx.trend tr:last-child td{font-weight:700}
+/* D15: thin left/right swap control, visually matching the reference */
+.swap{flex:0 0 auto;width:24px;height:24px;padding:0;border:0;border-radius:999px;background:transparent;color:#9290A0;display:grid;place-items:center;cursor:pointer}.swap:hover{background:var(--tint);color:var(--primary)}.swap svg{width:17px;height:17px}
 /* D9: Positioning header with two light dropdowns */
 .pos-head{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap}
 .pos-head h2{margin:0}
 .pos-head select{border:1px solid #E2DDF0;border-radius:999px;padding:3px 10px;height:26px;font:inherit;font-weight:700;color:var(--primary);background:var(--tint);cursor:pointer;min-width:0}
-/* D14: Legend tick on the revenue cards (checked = the Legend is shown in every chart and table) */
-.lgrow{display:flex;align-items:center;gap:7px;min-width:0}
-.lgrow .lg{flex:1 1 auto;min-width:0}
-.tick{position:relative;flex:0 0 auto;width:17px;height:17px;padding:0;border-radius:6px;border:1.6px solid var(--c,#B9B5C8);background:#fff;color:#fff;
-  display:grid;place-items:center;cursor:pointer;transition:background .15s,border-color .15s,box-shadow .15s}
-.tick::after{content:'';position:absolute;inset:-7px}                       /* larger touch target */
-.tick svg{width:11px;height:11px;opacity:0;transform:scale(.55);transition:opacity .15s,transform .15s}
-.tick.on{background:var(--c)}
-.tick.on svg{opacity:1;transform:none}
-.tick:hover{box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 18%,transparent)}
-.tick:focus-visible{outline:2px solid var(--secondary);outline-offset:2px}
-.card.off .lg,.card.off .tot,.card.off .cur,.card.off .right{opacity:.42}
-.card.off .left{border-left-color:#D5D1E2!important}
-/* D14: Positioning axis-swap button (replaces "vs") */
-.swap{flex:0 0 auto;width:26px;height:26px;padding:0;border-radius:50%;border:1px solid #E2DDF0;background:var(--tint);color:var(--primary);display:grid;place-items:center;cursor:pointer;transition:background .15s}
-.swap:hover{background:#E4DEF3}
-.swap svg{width:14px;height:14px;transition:transform .25s}
-.swap:active svg{transform:scale(.8)}
+/* D15: subtle eye control after the Legend name */
+.lgrow{display:flex;align-items:center;gap:5px;min-width:0}.lgrow .lg{flex:0 1 auto;min-width:0}
+.eye{flex:0 0 auto;width:18px;height:18px;padding:0;border:0;background:transparent;color:#AAA7B5;display:grid;place-items:center;cursor:pointer;border-radius:50%;transition:color .15s,background .15s}
+.eye svg{width:15px;height:15px}.eye:hover{color:#777384;background:#F1F0F5}.eye .eye-off{display:none}.eye:not(.on) .eye-open{display:none}.eye:not(.on) .eye-off{display:block;color:#C4C1CB}
+.eye:focus-visible{outline:2px solid #CDC8DD;outline-offset:1px}.card.off .lg,.card.off .tot,.card.off .cur,.card.off .right{opacity:.42}.card.off .left{border-left-color:#D5D1E2!important}
 /* D13: Comparison dropdowns. Custom control: a long Legend name wraps onto several lines (max 4). The box sits in the normal
    flow, so the header row, the Comparison card and its neighbour (Benchmarking) grow with it - nothing spills out of a card. */
 .cmp-wrap{overflow:visible}
@@ -335,11 +323,10 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
   .card{flex:none;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:8px 8px 8px 9px}
   .card .left{min-width:0;flex:1 1 auto;border-left-width:3px;padding-left:6px}
   .card .lg{font-size:11.5px;line-height:1.3}
-  .tick{width:14px;height:14px;border-radius:5px}.tick svg{width:9px;height:9px}.lgrow{gap:5px}
+  .eye{width:16px;height:16px}.eye svg{width:13px;height:13px}.lgrow{gap:3px}
   .card .tot{font-size:13px;line-height:1.25;overflow:hidden;text-overflow:ellipsis}
   .card .tot.lg2{font-size:11.5px}.card .tot.xl{font-size:10px}
   .card .right .lf{display:none}.card .right .ls{display:inline}
-  .card .cur .lf{display:none}.card .cur .ls{display:inline}      /* phone: "Total Rev." so the unit label fits */
   .card .cur{font-size:8px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .card .right{flex:0 0 auto;display:grid;grid-template-columns:auto auto;column-gap:4px;row-gap:1px;font-size:8.5px}
   .card{gap:4px}
@@ -466,7 +453,7 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
   .yr button{padding:3px 9px;font-size:10px}
   .cards{gap:7px}
   .card{min-width:205px;max-width:260px;padding:7px 10px}
-  .tick{width:15px;height:15px}.card .lg{font-size:12px}.card .tot{font-size:16px}.card .cur,.card .right{font-size:9.5px}
+  .card .lg{font-size:12px}.card .tot{font-size:16px}.card .cur,.card .right{font-size:9.5px}
   .quad{gap:7px}
   .quad>.panel{padding:8px 10px}
   .panel-head{margin-bottom:3px}.panel-head h2{font-size:12px}
@@ -562,7 +549,7 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
     <div class="quad">
       <div class="swipe" id="swCharts">
       <div class="panel">
-        <div class="panel-head"><div class="pos-head"><h2>Positioning:</h2><select id="posX" aria-label="Positioning measure 1"></select><button type="button" class="swap" id="posSwap" title="Swap the two measures" aria-label="Swap the two measures"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 5.5h10M10 3l2.5 2.5L10 8M13.5 10.5h-10M6 8l-2.5 2.5L6 13"/></svg></button><select id="posY" aria-label="Positioning measure 2"></select></div></div>
+        <div class="panel-head"><div class="pos-head"><h2>Positioning:</h2><select id="posX" aria-label="Positioning measure 1"></select><button type="button" class="swap" id="posSwap" title="Swap the two measures" aria-label="Swap the two measures"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h15m-4-4 4 4-4 4M20 16H5m4 4-4-4 4-4"/></svg></button><select id="posY" aria-label="Positioning measure 2"></select></div></div>
         <div class="chart-box"><canvas id="scatter"></canvas></div>
       </div>
       <div class="panel">
@@ -667,9 +654,10 @@ const PALETTE = [
   ['Gold', '#B8913A'], ['Red', '#B42318'], ['Sky', '#3FA7D6'], ['Brown', '#8B5E3C'],
   ['Slate', '#5A6B7B'], ['Olive', '#7A8B2E']
 ];
-const UNIT = { none: { div: 1, tag: '' }, K: { div: 1e3, tag: ' K' }, M: { div: 1e6, tag: ' M' } };
+const UNIT = { none: { div: 1, tag: '' }, K: { div: 1e3, tag: " '000" }, M: { div: 1e6, tag: ' M' } };
 const THIS_YEAR = new Date().getFullYear();
-const QTY_TAG = () => ({ none: '', K: 'K ', M: 'M ' })[state.unit];   // test-count unit label
+const QTY_TAG = () => ({ none: '', K: "'000 ", M: 'M ' })[state.unit];
+const CHART_QTY_TAG = () => ({ none:'', K:'K ', M:'M ' })[state.unit];    // charts only   // test-count unit label
 const HDR_ROW = 3;   // Excel: row 1 = Project Name, row 3 = column headers
 const XL_HEAD = ['Legend', 'Category', 'Year', 'Price (THB)', 'Quantity (Test)', 'Total Revenue (THB)'];
 /* Year can be ANY positive whole number: 1, 2, 3, 4 ... or 2025, 2026, 2027 ... */
@@ -709,7 +697,7 @@ function save() {
 let state = load();
 let slicerSel = new Set(CATS);      // revenue type slicer (Revenue Mix only)
 let yearSel = null;                 // year slicer: null = all years (default)
-let offLegends = new Set();         // Legends un-ticked on the Dashboard cards (default: none, i.e. every Legend is ticked)
+let offLegends = new Set();         // Legends hidden by the eye control (default: all visible)
 let scatterChart = null, stackedChart = null;
 
 /* =========================================================
@@ -741,14 +729,9 @@ function nextColour() {
 /** Rows with a Legend that pass the year slicer */
 const allYears = () => [...new Set(state.rows.filter(r => r.legend.trim()).map(yearKey))].sort(yearSort);
 const activeYears = () => { const ys = allYears(); return yearSel ? ys.filter(y => yearSel.has(y)) : ys; };
-/* message for an empty table: tells the user when Legends are only hidden by the card ticks */
-const emptyMsg = (need = 1) => offLegends.size
-  ? (need > 1 ? 'Tick at least 2 Legends on the cards to compare' : 'Tick a Legend on the cards to show it here')
-  : (need > 1 ? 'Add at least 2 legends to compare' : 'No data');
-/* ticked = true (default): only Legends ticked on the cards. ticked = false: every Legend (used by the cards themselves). */
-function filteredRows(ticked = true) {
+function filteredRows(visibleOnly = true) {
   const ys = new Set(activeYears());
-  return state.rows.filter(r => r.legend.trim() && CATS.includes(r.cat) && ys.has(yearKey(r)) && (!ticked || !offLegends.has(r.legend.trim())));
+  return state.rows.filter(r => r.legend.trim() && CATS.includes(r.cat) && ys.has(yearKey(r)) && (!visibleOnly || !offLegends.has(r.legend.trim())));
 }
 function aggregate(rows = filteredRows()) {
   const map = new Map();
@@ -1391,7 +1374,7 @@ document.getElementById('addRow').onclick = () => {
 const FONT_B = () => '700 11px ' + css('--font');
 const FONT_R = () => '600 10px ' + css('--font');
 
-/* number of tests in the selected rounding unit, e.g. 25 K */
+/* number of tests in the selected rounding unit, e.g. 25 '000 */
 const volTxt = v => fmtR(v) + (state.unit === 'K' ? ' K' : state.unit === 'M' ? ' M' : '');
 /* Circle label (4 lines): Legend / revenue / price / volume.
    The circle can never be larger than what the reference label needs ("Rev 26,000,000", the widest line of the AEC 2 example):
@@ -1415,7 +1398,7 @@ function bubbleLines(d) {
   };
   const sfx = state.unit === 'K' ? ' K' : state.unit === 'M' ? ' M' : '';
   return [name,
-    wrap('Rev ', d.revenue, fmtR(d.revenue), state.unit),
+    wrap('Rev ', d.revenue, chartBaseTxt(d.revenue), state.unit),
     wrap('Price ', d.price, fmt(d.price, 2), 'none'),
     wrap('Vol ', d.volume, fmtR(d.volume) + sfx, state.unit)];
 }
@@ -1447,7 +1430,8 @@ const scatterLabels = {
 
 /** Revenue Mix labels: segment values, column total on top, year under each column */
 /* Chart label: full number if it fits; otherwise K / M (M with 1 decimal). Values already in the selected unit. */
-const valTxt = v => state.unit === 'M' ? fmt(v, 1) : fmt0(v);     // full number for callouts
+const chartBaseTxt = v => (state.unit === 'M' ? fmt(v, 1) : fmt0(v)) + (state.unit === 'K' ? ' K' : '');
+const valTxt = v => chartBaseTxt(v);     // chart callouts: K only when Thousands is selected
 /* Wrapping steps, same decimal rule as the other numbers (K: 0 decimals, M / B / T: 1 decimal).
    No rounding : full -> K -> M -> B -> T      Thousands : full -> M -> B -> T      Millions : full -> B -> T          */
 const LV_MAX = (base = state.unit) => ({ none: 4, K: 3, M: 2 })[base];
@@ -1457,12 +1441,12 @@ function lvlText(v, L, base = state.unit) {
   L = Math.min(L, SC.length - 1);
   /* a value never wraps past its own size (4,000,000 stays 4.0M next to 21.0T instead of becoming 0.0T) */
   while (L > 0 && Math.abs(v) / SC[L] < (base === 'none' && L === 1 ? 1 : 0.1)) L--;
-  if (!L || !v) return fmt(v, base === 'M' ? 1 : 0);
-  return fmt(v / SC[L], base === 'none' && L === 1 ? 0 : 1) + SUF[L];
+  if (!L || !v) return fmt(v, base === 'M' ? 1 : 0) + (base === 'K' ? ' K' : '');
+  return fmt(v / SC[L], base === 'none' && L === 1 ? 0 : 1) + ' ' + SUF[L];
 }
 /* Wrapping level: 0 = full number, 1 = K, 2 = M  (depends on the selected rounding unit) */
 function numLevel(ctx, v, maxW) {
-  const full = state.unit === 'M' ? fmt(v, 1) : fmt0(v);
+  const full = chartBaseTxt(v);
   if (ctx.measureText(full).width <= maxW) return 0;
   const a = Math.abs(v);
   if (state.unit === 'none') return a >= 1e6 ? 2 : a >= 1e3 ? 1 : 0;
@@ -1470,16 +1454,16 @@ function numLevel(ctx, v, maxW) {
   return 0;
 }
 function numAt(v, lvl) {
-  if (!lvl) return state.unit === 'M' ? fmt(v, 1) : fmt0(v);
-  if (state.unit === 'none') return lvl === 2 ? fmt(v / 1e6, 1) + 'M' : fmt0(v / 1e3) + 'K';
-  return fmt(v / 1e3, 1) + 'M';                                     // unit K -> M
+  if (!lvl) return chartBaseTxt(v);
+  if (state.unit === 'none') return lvl === 2 ? fmt(v / 1e6, 1) + ' M' : fmt0(v / 1e3) + ' K';
+  return fmt(v / 1e3, 1) + ' M';                                     // unit K -> M
 }
 function chartNum(ctx, v, maxW) {
-  const full = state.unit === 'M' ? fmt(v, 1) : fmt0(v);
+  const full = chartBaseTxt(v);
   if (ctx.measureText(full).width <= maxW) return full;
   const a = Math.abs(v);
-  if (state.unit === 'none') { if (a >= 1e6) return fmt(v / 1e6, 1) + 'M'; if (a >= 1e3) return fmt0(v / 1e3) + 'K'; }
-  if (state.unit === 'K' && a >= 1e3) return fmt(v / 1e3, 1) + 'M';
+  if (state.unit === 'none') { if (a >= 1e6) return fmt(v / 1e6, 1) + ' M'; if (a >= 1e3) return fmt0(v / 1e3) + ' K'; }
+  if (state.unit === 'K' && a >= 1e3) return fmt(v / 1e3, 1) + ' M';
   return full;
 }
 const stackLabels = {
@@ -1560,8 +1544,7 @@ function paintPos() {
 }
 document.getElementById('posX').onchange = e => { state.posX = e.target.value; paintPos(); save(); renderDashboard(); };
 document.getElementById('posY').onchange = e => { state.posY = e.target.value; paintPos(); save(); renderDashboard(); };
-/* swap: XX [button] YY  <->  YY [button] XX (the chart axes follow) */
-document.getElementById('posSwap').onclick = () => { [state.posX, state.posY] = [state.posY, state.posX]; paintPos(); save(); renderDashboard(); };
+document.getElementById('posSwap').onclick = () => { [state.posX,state.posY]=[state.posY,state.posX]; paintPos(); save(); renderDashboard(); };
 const posTitle = (k, U) => k === 'price' ? `ROS Price (${state.currency})` : k === 'volume' ? `ROS Volume (${QTY_TAG()}Test)` : `ROS Revenue (${U})`;
 /* price: 2 decimals; volume / revenue: decimals follow the rounding unit, more only when the axis step is below 1 */
 const posTick = k => k === 'price' ? v => fmt(v, 2) : (v, i, ticks) => {
@@ -1611,7 +1594,7 @@ function range(vals, padPct) {
 }
 
 const ATTRS = [
-  /* number of tests follows the selected rounding; label shows the unit e.g. (K Test) */
+  /* number of tests follows the selected rounding; label shows the unit e.g. ('000 Test) */
   { get name() { return `ROS Quantity (${QTY_TAG()}Test)`; }, val: a => a.rosQty / UNIT[state.unit].div, get dec() { return nd(); } },
   { name: 'ROS Avg Price',       val: a => conv(a.rosAvgPrice), dec: 2 },
   { name: 'ROS Revenue',         val: a => rev(a.ROS),          get dec() { return nd(); } },
@@ -1628,34 +1611,28 @@ function renderDashboard() {
   }
   Chart.defaults.font.family = css('--font'); Chart.defaults.font.size = 11; Chart.defaults.color = css('--muted');
   buildYearSlicer();
-  offLegends = new Set([...offLegends].filter(n => legendNames().includes(n)));          // forget Legends that no longer exist
-  const rows = filteredRows(), data = aggregate(rows), U = unitLabel();                  // everything except the cards: ticked Legends only
-  const cardData = aggregate(filteredRows(false));                                       // cards: all Legends (un-ticked ones are dimmed)
+  offLegends = new Set([...offLegends].filter(n => legendNames().includes(n)));
+  const rows = filteredRows(), data = aggregate(rows), U = unitLabel();
+  const cardData = aggregate(filteredRows(false));
   const noGrid = { grid: { display: false }, border: { color: css('--line') }, ticks: { padding: 4, callback: v => fmtR(v) } };
 
   /* ----- Cards (selected years, total) ----- */
   document.getElementById('cards').innerHTML = cardData.length ? cardData.map(a => { const on = !offLegends.has(a.legend); return `
     <div class="card ${on ? '' : 'off'}">
       <div class="left" style="border-color:${a.color}">
-        <div class="lgrow">
-          <button type="button" class="tick ${on ? 'on' : ''}" data-lg="${esc(a.legend)}" role="checkbox" aria-checked="${on}" style="--c:${a.color}"
-                  title="${on ? 'Hide' : 'Show'} ${esc(a.legend)} in all charts and tables" aria-label="Show ${esc(a.legend)} in all charts and tables">
-            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.4 6.4l2.3 2.3 4.9-5.2"/></svg>
-          </button>
-          <div class="lg" style="color:${a.color}" title="${esc(a.legend)}">${esc(a.legend)}</div>
-        </div>
+        <div class="lgrow"><div class="lg" style="color:${a.color}" title="${esc(a.legend)}">${esc(a.legend)}</div>
+          <button type="button" class="eye ${on ? 'on' : ''}" data-lg="${esc(a.legend)}" role="checkbox" aria-checked="${on}" title="${on ? 'Hide' : 'Show'} ${esc(a.legend)} in all charts and tables" aria-label="Show ${esc(a.legend)} in all charts and tables">
+            <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6S2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.7"/></svg>
+            <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 6.2A10.4 10.4 0 0112 6c6 0 9.5 6 9.5 6a16.5 16.5 0 01-2.4 3.1M6.2 6.2C3.8 8 2.5 12 2.5 12s3.5 6 9.5 6a10 10 0 004-.8"/></svg>
+          </button></div>
         <div class="tot" data-v="${rev(a.total)}"></div>
-        <div class="cur"><span class="lf">Total Revenue</span><span class="ls">Total Rev.</span> (${U})</div>
+        <div class="cur">Total Revenue (${U})</div>
       </div>
       <div class="right">
         ${CATS.map(c => `<span><i class="dot" style="background:${CAT_COLOR[c]}"></i><b class="lf">${c}</b><b class="ls">${c === 'Instrument' ? 'Instr.' : c}</b></span><span class="cv" data-v="${rev(a[c])}"></span>`).join('')}
       </div>
     </div>`; }).join('') : '<div class="card"><span class="empty">No data yet. Add rows in Data Input.</span></div>';
-  document.querySelectorAll('#cards .tick').forEach(b => b.onclick = () => {
-    const n = b.dataset.lg; offLegends.has(n) ? offLegends.delete(n) : offLegends.add(n);
-    renderDashboard();
-  });
-
+  document.querySelectorAll('#cards .eye').forEach(b => b.onclick = () => { const n=b.dataset.lg; offLegends.has(n)?offLegends.delete(n):offLegends.add(n); renderDashboard(); });
   fitCards(U);
 
   /* ----- Positioning scatter (ROS, selected years in total): any two of Price / Volume / Revenue ----- */
@@ -1766,6 +1743,10 @@ function renderDashboard() {
    it cannot fit even then. Full values stay available as a tooltip. */
 function fitCards(U) {
   const mob = isPhonePortrait();
+  const cardText = (v, L) => {
+    const t = lvlText(v, L);
+    return state.unit === 'K' ? t.replace(/ K$/, '') : t;     // card label below already says THB '000
+  };
   document.querySelectorAll('#cards .card').forEach(card => {
     const left = card.querySelector('.left'), lg = card.querySelector('.lg'), tot = card.querySelector('.tot'), cur = card.querySelector('.cur');
     const cvs = [...card.querySelectorAll('.cv')], max = LV_MAX();
@@ -1773,10 +1754,10 @@ function fitCards(U) {
     const rg = document.createRange(); rg.selectNodeContents(lg);
     const lgMin = Math.min(rg.getBoundingClientRect().width, mob ? 44 : 70);        // at least the start of the Legend name stays visible
     const set = (L, Lt) => {
-      const tv = +tot.dataset.v; tot.textContent = lvlText(tv, Lt); tot.title = fmtR(tv) + ' ' + U;
-      cvs.forEach(c => { const v = +c.dataset.v; c.textContent = lvlText(v, L); c.title = fmtR(v) + ' ' + U; });
+      const tv = +tot.dataset.v; tot.textContent = cardText(tv, Lt); tot.title = fmtR(tv) + ' ' + U;
+      cvs.forEach(c => { const v = +c.dataset.v; c.textContent = cardText(v, L); c.title = fmtR(v) + ' ' + U; });
     };
-    const fits = strict => tot.scrollWidth <= tot.clientWidth + 1 && (!strict || cur.scrollWidth <= cur.clientWidth + 1) && left.clientWidth >= lgMin + (mob ? 20 : 26);
+    const fits = strict => tot.scrollWidth <= tot.clientWidth + 1 && (!strict || cur.scrollWidth <= cur.clientWidth + 1) && left.clientWidth >= lgMin;
     for (const strict of [true, false]) {
       for (let L = 0; L <= max; L++) { set(L, 0); if (fits(strict)) return; }     // 1) only the right figures wrap
       for (let c = 1; c <= max; c++) { set(c, c); if (fits(strict)) return; }     // 2) the total wraps too, at the same level
@@ -1824,7 +1805,7 @@ function renderBenchMobile(data) {
   const box = document.getElementById('benchMobile'), table = document.getElementById('bench');
   if (!isPhonePortrait()) { box.innerHTML = ''; table.classList.remove('mobile-hidden'); return; }
   table.classList.add('mobile-hidden');
-  if (!data.length) { box.innerHTML = `<div class="empty">${emptyMsg()}</div>`; return; }
+  if (!data.length) { box.innerHTML = '<div class="empty">No data</div>'; return; }
   const ext = ATTRS.map(at => { const vs = data.map(at.val), mx = Math.max(...vs), mn = Math.min(...vs); return { mx, mn, scale: data.length > 1 && mx !== mn }; });
   box.innerHTML = data.map(a => `
     <div class="mc">
@@ -1839,7 +1820,7 @@ function renderCompareMobile(data) {
   const box = document.getElementById('cmpMobile'), table = document.getElementById('cmp');
   if (!isPhonePortrait()) { box.innerHTML = ''; table.classList.remove('mobile-hidden'); return; }
   table.classList.add('mobile-hidden');
-  if (data.length < 2) { box.innerHTML = `<div class="empty">${emptyMsg(2)}</div>`; return; }
+  if (data.length < 2) { box.innerHTML = '<div class="empty">Add at least 2 legends to compare</div>'; return; }
   const names = data.map(a => a.legend), byName = n => data.find(a => a.legend === n);
   fixPairs(names);
   const opts = (cur, other) => names.filter(n => n !== other).map(n => `<option ${n === cur ? 'selected' : ''}>${esc(n)}</option>`).join('');
@@ -1913,7 +1894,7 @@ function trendData() {
   const names = legendNames().filter(n => !offLegends.has(n));
   if (!names.includes(state.trendLegend)) state.trendLegend = names[0] || '';
   const L = state.trendLegend, years = activeYears();
-  return { L, years, per: years.map(y => aggregate(state.rows.filter(r => r.legend.trim() === L && CATS.includes(r.cat) && yearKey(r) === y))[0] || null) };   // (L is always a ticked Legend)
+  return { L, years, per: years.map(y => aggregate(state.rows.filter(r => r.legend.trim() === L && CATS.includes(r.cat) && yearKey(r) === y))[0] || null) };
 }
 const zeroAgg = { ROS: 0, Instrument: 0, Rental: 0, rosQty: 0, total: 0, rosAvgPrice: 0 };
 function renderTrend(U) {
@@ -1922,7 +1903,7 @@ function renderTrend(U) {
   paintPick();
   document.getElementById('benchSub').textContent = `Revenue in ${U}`;
   t.classList.add('trend');
-  if (!L || !years.length) { t.innerHTML = `<tbody><tr><td class="empty">${emptyMsg()}</td></tr></tbody>`; renderTrendMobile(L, years, per); afterMx(); return; }
+  if (!L || !years.length) { t.innerHTML = '<tbody><tr><td class="empty">No data</td></tr></tbody>'; renderTrendMobile(L, years, per); afterMx(); return; }
   t.innerHTML = `
     <thead><tr><th></th>${years.map(y => `<th class="num">${esc(y)}</th>`).join('')}</tr></thead>
     <tbody>${ATTRS.map(at => `<tr><td>${at.name}</td>${years.map((y, j) => {
@@ -1936,7 +1917,7 @@ function renderTrendMobile(L, years, per) {
   const box = document.getElementById('benchMobile'), table = document.getElementById('bench');
   if (!isPhonePortrait()) { box.innerHTML = ''; table.classList.remove('mobile-hidden'); return; }
   table.classList.add('mobile-hidden');
-  if (!L || !years.length) { box.innerHTML = `<div class="empty">${emptyMsg()}</div>`; return; }
+  if (!L || !years.length) { box.innerHTML = '<div class="empty">No data</div>'; return; }
   box.innerHTML = years.map((y, j) => `
     <div class="mc">
       <div class="mc-head"><span class="mc-name">${esc(y)}</span></div>
@@ -1953,7 +1934,7 @@ function renderBench(data, U) {
   document.getElementById('bench').classList.remove('trend');
   document.getElementById('benchSub').textContent = `Revenue in ${U}`;
   const t = document.getElementById('bench');
-  if (!data.length) { t.innerHTML = `<tbody><tr><td class="empty">${emptyMsg()}</td></tr></tbody>`; renderBenchMobile(data); afterMx(); return; }
+  if (!data.length) { t.innerHTML = '<tbody><tr><td class="empty">No data</td></tr></tbody>'; renderBenchMobile(data); afterMx(); return; }
   t.innerHTML = `
     <thead><tr><th></th>${data.map(a => `<th class="num"><i class="dot" style="background:${a.color}"></i>${esc(a.legend)}</th>`).join('')}</tr></thead>
     <tbody>${ATTRS.map(at => {
@@ -2004,7 +1985,7 @@ window.addEventListener('scroll', e => { if (!csPop.contains(e.target)) closeCs(
 /* ----- Comparison ----- */
 function renderCompare(data) {
   const t = document.getElementById('cmp');
-  if (data.length < 2) { t.innerHTML = `<tbody><tr><td class="empty">${emptyMsg(2)}</td></tr></tbody>`; renderCompareMobile(data); afterMx(); return; }
+  if (data.length < 2) { t.innerHTML = '<tbody><tr><td class="empty">Add at least 2 legends to compare</td></tr></tbody>'; renderCompareMobile(data); afterMx(); return; }
   const names = data.map(a => a.legend);
   fixPairs(names);
   const byName = n => data.find(a => a.legend === n);
