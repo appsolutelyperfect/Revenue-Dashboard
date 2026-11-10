@@ -19,6 +19,10 @@
 }
 *{box-sizing:border-box}
 html,body{height:100%}
+/* #app = header + page. On PC it always fits the window: when the window (or the browser zoom) leaves less room than the
+   layout needs, the whole app is scaled down to fit (see applyFit), so nothing is ever cut off or pushed out of the page. */
+#app{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;width:100%;position:relative}
+html.fit #app{position:absolute;left:0;top:0;transform-origin:0 0;flex:none}
 body{margin:0;font-family:var(--font);color:var(--text);background:var(--bg);font-size:13px;display:flex;flex-direction:column;overflow:hidden}
 
 /* ---------- Header (60px, dark blue) ---------- */
@@ -45,18 +49,20 @@ header h1 #projTitle{font-size:16px;font-weight:400;color:#D9D4EC;line-height:1.
 .useg button.act{background:#fff;color:var(--primary)}
 header #unitSel{display:none}
 .icon-btn{border:0;background:rgba(255,255,255,.12);width:34px;height:34px;border-radius:50%;cursor:pointer;color:#fff;display:grid;place-items:center}
+#btnFullscreen{display:grid!important}                 /* visible on desktop, tablet and phone landscape */
+#btnFullscreen.nofs{display:none!important}             /* browser without a Fullscreen API (e.g. iPhone Safari) */
 .icon-btn:hover{background:rgba(255,255,255,.22)}
 .pill-btn{border:0;background:var(--accent);color:#fff;font:inherit;font-weight:600;padding:7px 16px;border-radius:999px;cursor:pointer;white-space:nowrap}
 .pill-btn:hover{filter:brightness(1.08)}
 
 /* Popovers */
-.pop{display:none;position:absolute;top:64px;background:var(--surface);color:var(--text);border-radius:var(--radius);padding:14px;z-index:30;box-shadow:0 8px 30px rgba(46,26,107,.18)}
+.pop{display:none;position:absolute;top:calc(64px * var(--fs,1));background:var(--surface);color:var(--text);border-radius:var(--radius);padding:14px;z-index:30;box-shadow:0 8px 30px rgba(46,26,107,.18)}
 .pop.open{display:block}
-#settings{right:24px;width:280px}
+#settings{right:calc(24px * var(--fs,1));width:280px}
 #settings label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
 #settings .err{color:var(--bad);font-size:12px;min-height:16px;margin-top:4px}
 #settings .row{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
-#exportMenu{right:70px;width:200px;padding:6px}
+#exportMenu{right:calc(70px * var(--fs,1));width:200px;padding:6px}
 #exportMenu button{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;padding:9px 12px;border-radius:10px;cursor:pointer}
 #exportMenu button:hover{background:var(--tint);color:var(--primary)}
 #busy{display:none;position:fixed;inset:0;background:rgba(245,244,249,.6);z-index:50;place-items:center;font-weight:600;color:var(--primary)}
@@ -272,6 +278,14 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
 .eye{flex:0 0 auto;width:18px;height:18px;padding:0;border:0;background:transparent;color:#AAA7B5;display:grid;place-items:center;cursor:pointer;border-radius:50%;transition:color .15s,background .15s}
 .eye svg{width:15px;height:15px}.eye:hover{color:#777384;background:#F1F0F5}.eye .eye-off{display:none}.eye:not(.on) .eye-open{display:none}.eye:not(.on) .eye-off{display:block;color:#C4C1CB}
 .eye:focus-visible{outline:2px solid #CDC8DD;outline-offset:1px}.card.off .lg,.card.off .tot,.card.off .cur,.card.off .right{opacity:.42}.card.off .left{border-left-color:#D5D1E2!important}
+/* D28: long Legend names wrap inside the Benchmarking header (max ~150px) instead of widening the whole matrix */
+.mtx th .nm{display:inline-block;max-width:150px;white-space:normal;overflow-wrap:anywhere;word-break:break-word;vertical-align:middle;line-height:1.2;text-align:right}
+/* D28: dense matrices - applied only when a matrix would otherwise need a scrollbar at the smallest comfortable scale */
+html.dense .mtx th,html.dense .mtx td{padding:0 5px;font-size:10.5px}
+html.dense .mtx th .nm{max-width:110px}
+html.dense .hi,html.dense .lo,html.dense .ball{padding:1px 6px;font-size:10.5px}
+html.dense .gr{margin-left:3px;padding:1px 5px;font-size:9.5px}
+html.dense .cs{max-width:100px}html.dense .cs-b{font-size:10.5px}
 /* D13: Comparison dropdowns. Custom control: a long Legend name wraps onto several lines (max 4). The box sits in the normal
    flow, so the header row, the Comparison card and its neighbour (Benchmarking) grow with it - nothing spills out of a card. */
 .cmp-wrap{overflow:visible}
@@ -286,6 +300,18 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
 #csPop .cs-o{padding:7px 10px;border-radius:8px;cursor:pointer;white-space:normal;overflow-wrap:anywhere;line-height:1.3}
 #csPop .cs-o:hover{background:var(--tint)}
 #csPop .cs-o.cur{background:var(--tint);color:var(--primary);font-weight:700}
+/* D22: short layouts (< 860 px high, see applyFit) use slightly denser spacing so charts and tables all fit on one page */
+html.tight main{padding:10px 24px 10px}
+html.tight #page-dashboard{gap:8px}
+html.tight .cards .card{padding:10px 16px}
+html.tight .quad{gap:10px}
+html.tight .quad .panel{padding:12px 16px}
+html.tight .quad .mtx th{height:30px}
+html.tight .quad .mtx td{height:27px}
+/* D22: the two dropdowns of a comparison column share the column; when it is narrow they shrink and the names wrap */
+.pairhead{display:flex;align-items:center;justify-content:flex-end;gap:5px;min-width:0}
+.pairhead .cs{flex:0 1 auto;min-width:46px;max-width:120px}
+.pairhead .sub{flex:none}
 /* D7: Comparison dropdowns - light background */
 .cmp select{background:var(--tint)!important;border-color:#E2DDF0!important;color:var(--primary)}
 /* =========================================================
@@ -297,6 +323,7 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
 @media (max-width: 600px) and (orientation: portrait) {
   html,body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto}
   body{display:block;font-size:12px}
+  #app{display:block;flex:none;height:auto;min-height:0}
 
   /* ---- Header: title + menu + settings / page tabs ---- */
   header{position:fixed;top:0;left:0;right:0;z-index:25;height:auto;display:grid;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"title more set" "nav nav nav";gap:6px;padding:6px 10px 8px;align-items:center}
@@ -435,7 +462,7 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
 
 /* Phone landscape: use desktop-style dashboard and table, but make them fit
    the shorter/wider viewport cleanly. */
-@media (max-height: 600px) and (orientation: landscape) {
+@media (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
   html,body{height:100%;overflow:hidden}
   header{flex:0 0 52px;padding:0 14px}
   header h1{font-size:17px}
@@ -474,6 +501,7 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
 </head>
 <body>
 
+<div id="app">
 <!-- ================= HEADER ================= -->
 <header>
   <h1>Revenue Dashboard<span id="projTitle"></span></h1>
@@ -496,47 +524,15 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
     <button class="icon-btn no-export" id="btnMore" type="button" title="Menu" aria-label="Menu">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
     </button>
+    <button class="icon-btn no-export" id="btnFullscreen" type="button" title="Full screen" aria-label="Enter full screen">
+      <svg class="fs-enter" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg>
+      <svg class="fs-exit" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M3 8h5V3M21 8h-5V3M3 16h5v5M21 16h-5v5"/></svg>
+    </button>
     <button class="icon-btn no-export" id="btnSettings" title="Settings" aria-label="Settings">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
   </div>
 </header>
-
-<!-- Settings -->
-<div class="pop no-export" id="settings">
-  <label for="rate">USD Rate (THB per 1 USD)</label>
-  <input id="rate" class="inp" type="text" inputmode="decimal">
-  <div class="err" id="rateErr"></div>
-  <div class="row">
-    <button class="btn-line" id="rateReset">Reset</button>
-    <button class="btn" id="rateApply">Apply</button>
-  </div>
-</div>
-
-<!-- Mobile portrait: hidden menu (currency, rounding, export) -->
-<div class="pop no-export" id="moreMenu">
-  <div class="mm-row"><span class="mm-l">Currency</span><div id="mmCur"></div></div>
-  <div class="mm-row"><span class="mm-l">Rounding</span><div id="mmUnit"></div></div>
-</div>
-
-<!-- Export menu (dashboard screenshot) -->
-<div class="pop no-export" id="exportMenu">
-  <button data-exp="pdf">Export as PDF</button>
-  <button data-exp="ppt">Export as PowerPoint</button>
-</div>
-<div id="busy" class="no-export">Preparing…</div>
-<div id="toast" class="no-export"></div>
-<div id="legendMenu" class="no-export"></div>
-<div id="mselPop" class="no-export"></div>
-<div id="pickPop" class="no-export"></div>
-<div id="csPop" class="no-export"></div>
-<!-- Data file menu (hidden) -->
-<div class="pop no-export" id="fileMenu">
-  <button type="button" data-act="btnTemplate">Download Template</button>
-  <button type="button" data-act="btnImport">Import Excel</button>
-  <button type="button" data-act="btnExportData">Export Data</button>
-</div>
-
 <main>
   <!-- ================= DASHBOARD ================= -->
   <section class="page active" id="page-dashboard">
@@ -638,6 +634,45 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
     </div>
   </section>
 </main>
+</div>
+
+
+<!-- Settings -->
+<div class="pop no-export" id="settings">
+  <label for="rate">USD Rate (THB per 1 USD)</label>
+  <input id="rate" class="inp" type="text" inputmode="decimal">
+  <div class="err" id="rateErr"></div>
+  <div class="row">
+    <button class="btn-line" id="rateReset">Reset</button>
+    <button class="btn" id="rateApply">Apply</button>
+  </div>
+</div>
+
+<!-- Mobile portrait: hidden menu (currency, rounding, export) -->
+<div class="pop no-export" id="moreMenu">
+  <div class="mm-row"><span class="mm-l">Currency</span><div id="mmCur"></div></div>
+  <div class="mm-row"><span class="mm-l">Rounding</span><div id="mmUnit"></div></div>
+</div>
+
+<!-- Export menu (dashboard screenshot) -->
+<div class="pop no-export" id="exportMenu">
+  <button data-exp="pdf">Export as PDF</button>
+  <button data-exp="ppt">Export as PowerPoint</button>
+</div>
+<div id="busy" class="no-export">Preparing…</div>
+<div id="toast" class="no-export"></div>
+<div id="legendMenu" class="no-export"></div>
+<div id="mselPop" class="no-export"></div>
+<div id="pickPop" class="no-export"></div>
+<div id="csPop" class="no-export"></div>
+<!-- Data file menu (hidden) -->
+<div class="pop no-export" id="fileMenu">
+  <button type="button" data-act="btnTemplate">Download Template</button>
+  <button type="button" data-act="btnImport">Import Excel</button>
+  <button type="button" data-act="btnExportData">Export Data</button>
+</div>
+
+
 
 <script>
 /* =========================================================
@@ -783,7 +818,7 @@ function showPage(p) {
   document.querySelectorAll('#nav button').forEach(x => x.classList.toggle('active', x.dataset.page === p));
   document.querySelectorAll('.page').forEach(s => s.classList.toggle('active', s.id === 'page-' + p));
   closeMenu();
-  if (p === 'dashboard') renderDashboard();
+  if (p === 'dashboard') renderDashboard(); else applyFit();
 }
 document.querySelectorAll('#nav button').forEach(b => b.onclick = () => showPage(b.dataset.page));
 
@@ -804,7 +839,88 @@ function paintSwitch() {
 }
 sw.onclick = e => { e.stopPropagation(); state.currency = state.currency === 'USD' ? 'THB' : 'USD'; paintSwitch(); save(); renderAll(); };
 
-/* ---------- Mobile portrait: hidden menu for currency / rounding / export ---------- */
+/* ---------- Fit to window (PC) ----------
+   Works for ANY browser zoom (25% - 500%) and ANY Windows display scale (100% - 200%+): both only change the window size in CSS px.
+   The app is laid out at a "virtual" size (window / scale) and scaled to fill the window. The scale is MEASURED, not fixed: the largest
+   scale (max 100%) at which nothing is cut off and neither matrix (Benchmarking / Trending / Comparison) needs a scrollbar.
+   Phones keep their own layouts (portrait = scrolling mobile view, landscape = compact view). */
+const FIT_MIN = 0.3;                  // below this the page would be unreadable; the matrices may then scroll as a last resort
+const MIN_CHART_H = 135;              // each chart keeps at least this many (virtual) px of height
+let fitS = 1, fitBusy = false;
+const LANDSCAPE_PHONE_MQ = window.matchMedia('(max-height: 600px) and (orientation: landscape) and (pointer: coarse)');
+const isPhoneLayout = () => PORTRAIT_MQ.matches || LANDSCAPE_PHONE_MQ.matches;
+const pageEl = p => document.getElementById('page-' + p);
+const dashShown = () => pageEl('dashboard').classList.contains('active');
+
+function setScale(sc) {
+  const app = document.getElementById('app'), root = document.documentElement;
+  const vw = root.clientWidth || innerWidth, vh = root.clientHeight || innerHeight;
+  const on = sc < 0.999 && !isPhoneLayout();
+  root.classList.toggle('tight', !isPhoneLayout() && (on ? vh / sc : vh) < 860);   // short layout: slightly denser spacing
+  root.classList.toggle('fit', on);
+  root.style.setProperty('--fs', on ? sc : 1);
+  app.style.width = on ? (vw / sc) + 'px' : '';
+  app.style.height = on ? (vh / sc) + 'px' : '';
+  app.style.transform = on ? `scale(${sc})` : '';
+  fitS = on ? sc : 1;
+}
+/* true when nothing on the Dashboard is cut off and no matrix needs scrolling */
+function dashFits() {
+  const hdr = document.querySelector('header');
+  if (hdr.scrollWidth > hdr.clientWidth + 1) return false;
+  const cards = document.getElementById('cards');
+  if (cards.scrollWidth > cards.clientWidth + 1) return false;
+  /* cards: the total must show in full and the Legend name must keep room for at least ~12 characters (full name stays in the tooltip) */
+  for (const c of document.querySelectorAll('#cards .card')) {
+    const lg = c.querySelector('.lg'), tot = c.querySelector('.tot');
+    if (!lg || !tot) continue;
+    if (tot.scrollWidth > tot.clientWidth + 1) return false;
+    if (lg.scrollWidth > lg.clientWidth + 1 && lg.clientWidth < 110) return false;
+  }
+  for (const w of document.querySelectorAll('.quad .tbl-wrap'))
+    if (w.scrollWidth > w.clientWidth + 1 || w.scrollHeight > w.clientHeight + 1) return false;
+  for (const p of document.querySelectorAll('.quad .panel')) if (p.scrollHeight > p.clientHeight + 1) return false;
+  for (const c of document.querySelectorAll('.quad .chart-box')) if (c.clientHeight < MIN_CHART_H) return false;
+  const m = document.querySelector('main');
+  return m.scrollHeight <= m.clientHeight + 1;
+}
+function inputFits() {
+  const ph = document.querySelector('#page-input .panel-head'), w = document.getElementById('inputWrap');
+  return ph.scrollWidth <= ph.clientWidth + 1 && w.scrollWidth <= w.clientWidth + 1;
+}
+function probe(sc) {
+  document.documentElement.classList.remove('dense');
+  if (probeAt(sc)) return true;
+  document.documentElement.classList.add('dense');          // matrices still too wide / tall: tighten their spacing
+  if (probeAt(sc)) return true;
+  document.documentElement.classList.remove('dense');
+  return false;
+}
+function probeAt(sc) {
+  setScale(sc);
+  const inputOn = pageEl('input').classList.contains('active');
+  if (inputOn && !inputFits()) return false;
+  if (inputOn) { pageEl('input').classList.remove('active'); pageEl('dashboard').classList.add('active'); }   // measure the Dashboard even from Data Input
+  try { fitCards(unitLabel()); afterMx(); return dashFits(); }
+  finally { if (inputOn) { pageEl('dashboard').classList.remove('active'); pageEl('input').classList.add('active'); } }
+}
+function applyFit() {
+  const prev = fitS;
+  if (isPhoneLayout()) { setScale(1); return Math.abs(1 - prev) > 0.0005; }
+  let sc = 1;
+  if (!probe(1)) {
+    if (!probe(FIT_MIN)) sc = FIT_MIN;
+    else {
+      let lo = FIT_MIN, hi = 1;
+      for (let i = 0; i < 7; i++) { const mid = (lo + hi) / 2; if (probe(mid)) lo = mid; else hi = mid; }
+      sc = Math.floor(lo * 1000) / 1000;
+    }
+  }
+  if (!probe(sc)) { document.documentElement.classList.add('dense'); probeAt(sc); }     // last resort: densest matrices at the final scale
+  return Math.abs(sc - prev) > 0.0005;
+}
+const resetCharts = () => { scatterChart && scatterChart.destroy(); stackedChart && stackedChart.destroy(); scatterChart = stackedChart = null; };
+/* Mobile portrait: hidden menu for currency / rounding / export */
 const PORTRAIT_MQ = window.matchMedia('(max-width: 600px) and (orientation: portrait)');
 const moreMenu = document.getElementById('moreMenu');
 function placeControls() {
@@ -824,6 +940,29 @@ document.getElementById('btnMore').onclick = e => {
 };
 document.addEventListener('click', e => { if (!moreMenu.contains(e.target)) moreMenu.classList.remove('open'); });
 
+/* ---------- Full screen ---------- */
+const fsBtn = document.getElementById('btnFullscreen');
+const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
+const fsReq = document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen;
+if (!fsReq) fsBtn.classList.add('nofs');
+function paintFs() {
+  const on = !!fsEl();
+  fsBtn.querySelector('.fs-enter').style.display = on ? 'none' : '';
+  fsBtn.querySelector('.fs-exit').style.display = on ? '' : 'none';
+  fsBtn.title = on ? 'Exit full screen' : 'Full screen';
+  fsBtn.setAttribute('aria-label', on ? 'Exit full screen' : 'Enter full screen');
+}
+fsBtn.onclick = async e => {
+  e.stopPropagation();
+  try {
+    const el = document.documentElement;
+    if (!fsEl()) await (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+    else await (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+  } catch (_) { toast('Full screen is not available in this browser view.'); }
+  paintFs();
+};
+document.addEventListener('fullscreenchange', paintFs);
+document.addEventListener('webkitfullscreenchange', paintFs);
 const setPop = document.getElementById('settings'), expPop = document.getElementById('exportMenu');
 const rateIn = document.getElementById('rate'), rateErr = document.getElementById('rateErr');
 document.getElementById('btnSettings').onclick = e => {
@@ -1372,8 +1511,8 @@ document.getElementById('addRow').onclick = () => {
 /* =========================================================
    CHART PLUGINS
    ========================================================= */
-const FONT_B = () => '700 11px ' + css('--font');
-const FONT_R = () => '600 10px ' + css('--font');
+const FONT_B = (k = 1) => `700 ${(11 * k).toFixed(2)}px ` + css('--font');
+const FONT_R = (k = 1) => `600 ${(10 * k).toFixed(2)}px ` + css('--font');
 
 /* number of tests in the selected rounding unit, e.g. 25 '000 */
 const volTxt = v => fmtR(v) + (state.unit === 'K' ? ' K' : state.unit === 'M' ? ' M' : '');
@@ -1423,7 +1562,8 @@ const scatterLabels = {
       ctx.fillStyle = d.color; ctx.fill();
       ctx.lineWidth = 2; ctx.strokeStyle = '#fff'; ctx.stroke();
       ctx.fillStyle = '#fff';
-      bubbleLines(d).forEach((t, k) => { ctx.font = k === 0 ? FONT_B() : FONT_R(); ctx.fillText(t, pt.x, pt.y + (k - 1.5) * 14); });
+      const f = d.k || 1;                                   // circle scale (text shrinks together with the circle)
+      bubbleLines(d).forEach((t, k) => { ctx.font = k === 0 ? FONT_B(f) : FONT_R(f); ctx.fillText(t, pt.x, pt.y + (k - 1.5) * 14 * f); });
     });
     ctx.restore();
   }
@@ -1608,9 +1748,11 @@ function renderDashboard() {
   if (!document.getElementById('page-dashboard').classList.contains('active')) return;   // render only when visible
   if (typeof Chart === 'undefined') {
     document.getElementById('cards').innerHTML = '<div class="card"><span class="empty">Charts could not load. Check your internet connection.</span></div>';
+    applyFit();
     return;
   }
   Chart.defaults.font.family = css('--font'); Chart.defaults.font.size = 11; Chart.defaults.color = css('--muted');
+  Chart.defaults.devicePixelRatio = (window.devicePixelRatio || 1) * fitS;
   buildYearSlicer();
   offLegends = new Set([...offLegends].filter(n => legendNames().includes(n)));
   const rows = filteredRows(), data = aggregate(rows), U = unitLabel();
@@ -1641,9 +1783,14 @@ function renderDashboard() {
     const m = { price: conv(a.rosAvgPrice), volume: a.rosQty / UNIT[state.unit].div, revenue: rev(a.ROS) };
     return { x: m[state.posX], y: m[state.posY], price: m.price, volume: m.volume, revenue: m.revenue, label: a.legend, color: a.color };
   });
-  const radii = pts.map(bubbleRadius), maxR = Math.max(0, ...radii);
-  /* axis headroom = circle radius in pixels, so no extra empty band between the header and the plot */
+  /* plot size first: circles are sized for the plot (diameter <= ~72% of its shorter side); their text shrinks with them */
   const sBox = document.getElementById('scatter').parentElement;
+  const plotH = (sBox.clientHeight || 240) - 56, plotW = (sBox.clientWidth || 400) - 78;
+  const rFull = pts.map(bubbleRadius), rTop = Math.max(1, ...rFull);
+  const kScale = Math.max(0.5, Math.min(1, (0.36 * Math.min(plotW, plotH) - 6) / rTop));
+  pts.forEach(p => p.k = kScale);
+  const radii = rFull.map(r => r * kScale), maxR = Math.max(0, ...radii);
+  /* axis headroom = circle radius in pixels, so no extra empty band between the header and the plot */
   const padRange = (vals, plotPx) => {
     if (!vals.length) return {};
     let mn = Math.min(...vals), mx = Math.max(...vals);
@@ -1651,7 +1798,6 @@ function renderDashboard() {
     const r = maxR + 6, f = plotPx - 2 * r > 40 ? Math.min(1.5, Math.max(0.08, r / (plotPx - 2 * r))) : 0.5;
     return { min: Math.max(0, mn - (mx - mn) * f), max: mx + (mx - mn) * f };
   };
-  const plotH = (sBox.clientHeight || 240) - 56, plotW = (sBox.clientWidth || 400) - 78;
   scatterChart = upsertChart(scatterChart, 'scatter', {
     type: 'scatter',
     data: { datasets: [{ data: pts, backgroundColor: pts.map(p => p.color), pointRadius: radii, pointHoverRadius: radii.map(r => r + 2), borderColor: '#fff', borderWidth: 2 }] },
@@ -1736,6 +1882,8 @@ function renderDashboard() {
   renderBench(data, U);
   renderCompare(data);
   afterMx();
+  /* the matrices may now need a different scale (e.g. a Legend or Year was added): re-measure; if it changed, redraw the charts once */
+  if (!fitBusy) { fitBusy = true; try { if (applyFit()) { resetCharts(); renderDashboard(); } } finally { fitBusy = false; } }
 }
 
 
@@ -1753,7 +1901,7 @@ function fitCards(U) {
     const cvs = [...card.querySelectorAll('.cv')], max = LV_MAX();
     if (!tot) return;
     const rg = document.createRange(); rg.selectNodeContents(lg);
-    const lgMin = Math.min(rg.getBoundingClientRect().width, mob ? 44 : 70);        // at least the start of the Legend name stays visible
+    const lgMin = Math.min(rg.getBoundingClientRect().width / fitS, mob ? 44 : 70);        // at least the start of the Legend name stays visible
     const set = (L, Lt) => {
       const tv = +tot.dataset.v; tot.textContent = cardText(tv, Lt); tot.title = fmtR(tv) + ' ' + U;
       cvs.forEach(c => { const v = +c.dataset.v; c.textContent = cardText(v, L); c.title = fmtR(v) + ' ' + U; });
@@ -1774,7 +1922,7 @@ function syncMxHeads() {
   ths.forEach(th => th.style.height = '');
   const b = document.querySelector('#bench thead tr'), c = document.querySelector('#cmp thead tr');
   if (isPhonePortrait() || !b || !c) return;
-  const h = Math.max(b.getBoundingClientRect().height, c.getBoundingClientRect().height);
+  const h = Math.max(b.getBoundingClientRect().height, c.getBoundingClientRect().height) / fitS;
   ths.forEach(th => th.style.height = h + 'px');
 }
 function fitQuad() {
@@ -1937,7 +2085,7 @@ function renderBench(data, U) {
   const t = document.getElementById('bench');
   if (!data.length) { t.innerHTML = '<tbody><tr><td class="empty">No data</td></tr></tbody>'; renderBenchMobile(data); afterMx(); return; }
   t.innerHTML = `
-    <thead><tr><th></th>${data.map(a => `<th class="num"><i class="dot" style="background:${a.color}"></i>${esc(a.legend)}</th>`).join('')}</tr></thead>
+    <thead><tr><th></th>${data.map(a => `<th class="num" title="${esc(a.legend)}"><i class="dot" style="background:${a.color}"></i><span class="nm">${esc(a.legend)}</span></th>`).join('')}</tr></thead>
     <tbody>${ATTRS.map(at => {
       const vals = data.map(at.val), mx = Math.max(...vals), mn = Math.min(...vals);
       const scale = data.length > 1 && mx !== mn;
@@ -1997,7 +2145,7 @@ function renderCompare(data) {
     const pct = Y ? `${d > 0 ? '+' : '-'}${fmt0(Math.abs(d / Y * 100))}%` : 'n/a';
     return d > 0 ? `<span class="ball up">▲ ${v} | ${pct}</span>` : `<span class="ball down">▼ ${v} | ${pct}</span>`;
   };
-  const head = k => `<th class="num">${csBtn(k, 0, state.cmp[k][0])}<span class="sub"> vs </span>${csBtn(k, 1, state.cmp[k][1])}</th>`;
+  const head = k => `<th class="num"><div class="pairhead">${csBtn(k, 0, state.cmp[k][0])}<span class="sub">vs</span>${csBtn(k, 1, state.cmp[k][1])}</div></th>`;
   t.innerHTML = `
     <thead><tr><th></th>${head(0)}${head(1)}</tr></thead>
     <tbody>${ATTRS.map(at => `<tr><td>${at.name}</td><td class="num">${cell(at, state.cmp[0])}</td><td class="num">${cell(at, state.cmp[1])}</td></tr>`).join('')}</tbody>`;
@@ -2016,21 +2164,22 @@ setupSwipe('swCharts', 'dotsCharts'); setupSwipe('swMx', 'dotsMx');
 PORTRAIT_MQ.addEventListener('change', () => { placeControls(); renderDashboard(); });
 if (!storageOK) document.getElementById('storageWarn').classList.add('show');
 renderAll();
-let responsiveTimer;
-/* Mobile browsers fire "resize" while scrolling (address bar shows/hides).
-   Re-render only when the WIDTH changes, so charts do not blink on scroll. */
-let lastW = innerWidth;
+let rzT, lastW = innerWidth;
 const setHdrH = () => document.documentElement.style.setProperty('--hdrH', document.querySelector('header').offsetHeight + 'px');
 setHdrH();
 window.addEventListener('resize', () => {
   setHdrH();
-  if (innerWidth === lastW) return;
+  /* phones fire "resize" while scrolling (address bar shows / hides): ignore unless the width really changed */
+  if (isPhoneLayout() && innerWidth === lastW) return;
   lastW = innerWidth;
-  clearTimeout(responsiveTimer);
-  responsiveTimer = setTimeout(() => { if (document.getElementById('page-dashboard').classList.contains('active')) renderDashboard(); }, 180);
+  clearTimeout(rzT);
+  rzT = setTimeout(() => {
+    resetCharts();                                    // new window size / browser zoom / display scale: rebuild charts at the new pixel ratio
+    if (dashShown()) renderDashboard(); else applyFit();
+  }, 90);
 });
-window.addEventListener('resize', () => { if (document.getElementById('page-dashboard').classList.contains('active')) fitQuad(); });
-PORTRAIT_MQ.addEventListener('change', setHdrH);
+PORTRAIT_MQ.addEventListener('change', () => { setHdrH(); applyFit(); });
+LANDSCAPE_PHONE_MQ.addEventListener('change', () => { applyFit(); renderDashboard(); });
 </script>
 </body>
 </html>
