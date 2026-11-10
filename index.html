@@ -307,6 +307,7 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
   #nav button{flex:1;padding:6px 8px;font-size:12px}
   #btnMore{grid-area:more;display:grid}
   #btnSettings{grid-area:set}
+  #btnFullscreen{display:none!important}                 /* Fullscreen API is unreliable in upright mobile browser views */
   header #curSwitch,header #unitSel,header #unitSeg{display:none}
   .icon-btn{width:30px;height:30px}
   .pop{position:fixed;top:calc(var(--hdrH,84px) + 4px);right:10px!important;max-width:calc(100vw - 20px)}
@@ -494,10 +495,6 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
     </select>
     <button class="icon-btn no-export" id="btnMore" type="button" title="Menu" aria-label="Menu">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
-    </button>
-    <button class="icon-btn no-export" id="btnFullscreen" title="Full screen" aria-label="Enter full screen">
-      <svg class="fs-enter" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg>
-      <svg class="fs-exit" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M3 8h5V3M21 8h-5V3M3 16h5v5M21 16h-5v5"/></svg>
     </button>
     <button class="icon-btn no-export" id="btnSettings" title="Settings" aria-label="Settings">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -827,31 +824,6 @@ document.getElementById('btnMore').onclick = e => {
 };
 document.addEventListener('click', e => { if (!moreMenu.contains(e.target)) moreMenu.classList.remove('open'); });
 
-/* ---------- Full screen ---------- */
-const fsBtn = document.getElementById('btnFullscreen');
-const fullscreenEl = () => document.fullscreenElement || document.webkitFullscreenElement;
-function paintFullscreen() {
-  const on = !!fullscreenEl();
-  fsBtn.querySelector('.fs-enter').style.display = on ? 'none' : '';
-  fsBtn.querySelector('.fs-exit').style.display = on ? '' : 'none';
-  fsBtn.title = on ? 'Exit full screen' : 'Full screen';
-  fsBtn.setAttribute('aria-label', on ? 'Exit full screen' : 'Enter full screen');
-}
-fsBtn.onclick = async e => {
-  e.stopPropagation();
-  try {
-    if (!fullscreenEl()) {
-      const req = document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen;
-      if (req) await req.call(document.documentElement);
-    } else {
-      const exit = document.exitFullscreen || document.webkitExitFullscreen;
-      if (exit) await exit.call(document);
-    }
-  } catch (_) { toast('Full screen is not available in this browser view.'); }
-  paintFullscreen();
-};
-document.addEventListener('fullscreenchange', paintFullscreen);
-document.addEventListener('webkitfullscreenchange', paintFullscreen);
 const setPop = document.getElementById('settings'), expPop = document.getElementById('exportMenu');
 const rateIn = document.getElementById('rate'), rateErr = document.getElementById('rateErr');
 document.getElementById('btnSettings').onclick = e => {
