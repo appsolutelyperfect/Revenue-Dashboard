@@ -286,6 +286,28 @@ html.dense .mtx th .nm{max-width:110px}
 html.dense .hi,html.dense .lo,html.dense .ball{padding:1px 6px;font-size:10.5px}
 html.dense .gr{margin-left:3px;padding:1px 5px;font-size:9.5px}
 html.dense .cs{max-width:100px}html.dense .cs-b{font-size:10.5px}
+html.dense2 .mtx th,html.dense2 .mtx td{padding:0 3px;font-size:9.5px}html.dense2 .mtx th .nm{max-width:84px}html.dense2 .gr{display:block;margin:1px 0 0 auto;width:fit-content}
+/* D25: enlarge / shrink button on each chart & matrix (not on phone portrait) */
+.ph-r{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.zoom-btn{flex:0 0 auto;width:24px;height:24px;padding:0;border:0;border-radius:7px;background:transparent;color:#A3A0B2;display:grid;place-items:center;cursor:pointer;transition:background .15s,color .15s}
+.zoom-btn:hover{background:var(--tint);color:var(--primary)}
+.zoom-btn svg{width:15px;height:15px}.zoom-btn .z-out{display:none}
+#page-dashboard.zoomed .cards{display:none}
+#page-dashboard.zoomed .quad{grid-template-columns:1fr!important;grid-template-rows:1fr!important}
+#page-dashboard.zoomed .quad .panel{display:none}
+#page-dashboard.zoomed .quad .panel.zoom-on{display:flex;grid-column:1/-1;grid-row:1/-1}
+#page-dashboard.zoomed .mtx th{height:42px;font-size:13px}#page-dashboard.zoomed .mtx td{height:38px;font-size:13px}
+.panel.zoom-on .zoom-btn .z-in{display:none}.panel.zoom-on .zoom-btn .z-out{display:block}
+/* D25: 1 / 2 comparison toggle (numbers inside); locked to 1 when only 2 Legends are shown */
+/* compact, like the ROS growth switch: 20px high, light track, dark knob; the numbers sit inside */
+.cmp-title{display:flex;align-items:center;gap:10px;min-width:0}
+.tswitch.cmpn{height:20px;padding:2px;font-size:10.5px;background:#DCD7EA;box-shadow:none}
+.tswitch.cmpn::before{top:2px;bottom:2px;left:2px;width:calc(50% - 2px);background:var(--primary)}
+.tswitch.cmpn span{padding:0 8px;min-width:22px;line-height:16px;color:var(--muted);font-weight:700}
+.tswitch.cmpn span.act{color:#fff}
+#cmpNSwitch.locked{cursor:not-allowed;opacity:.55}
+/* D25: comparison swap arrow (replaces "vs") */
+.pairhead .swap,.mc-head .swap{width:22px;height:22px}.pairhead .swap svg,.mc-head .swap svg{width:15px;height:15px}
 /* D13: Comparison dropdowns. Custom control: a long Legend name wraps onto several lines (max 4). The box sits in the normal
    flow, so the header row, the Comparison card and its neighbour (Benchmarking) grow with it - nothing spills out of a card. */
 .cmp-wrap{overflow:visible}
@@ -390,6 +412,8 @@ html.tight .quad .mtx td{height:27px}
   #mxSwitch{font-size:10.5px}#mxSwitch span{padding:3px 8px}
   .mc .gr{font-size:9.5px;padding:1px 5px;margin-left:4px}
   .mc-head .sub{flex:none}
+  .zoom-btn{display:none!important}
+  .mc-head .swap{flex:none}
   .mc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 10px}
   .mc-cell{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0 4px;min-width:0;min-height:20px}
   .mc-l{flex:1 1 40px;min-width:40px;font-size:9.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -545,16 +569,17 @@ html.tight .quad .mtx td{height:27px}
 
     <div class="quad">
       <div class="swipe" id="swCharts">
-      <div class="panel">
-        <div class="panel-head"><div class="pos-head"><h2>Positioning:</h2><select id="posX" aria-label="Positioning measure 1"></select><button type="button" class="swap" id="posSwap" title="Swap the two measures" aria-label="Swap the two measures"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h15m-4-4 4 4-4 4M20 16H5m4 4-4-4 4-4"/></svg></button><select id="posY" aria-label="Positioning measure 2"></select></div></div>
+      <div class="panel" data-pnl="pos">
+        <div class="panel-head"><div class="pos-head"><h2>Positioning:</h2><select id="posX" aria-label="Positioning measure 1"></select><button type="button" class="swap" id="posSwap" title="Swap the two measures" aria-label="Swap the two measures"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h15m-4-4 4 4-4 4M20 16H5m4 4-4-4 4-4"/></svg></button><select id="posY" aria-label="Positioning measure 2"></select></div><button type="button" class="zoom-btn" data-zoom="pos" title="Enlarge" aria-label="Enlarge"><svg class="z-in" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M10 20H4v-6M20 4l-6.5 6.5M4 20l6.5-6.5"/></svg><svg class="z-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10h-6V4M4 14h6v6M14 10l6.5-6.5M10 14l-6.5 6.5"/></svg></button></div>
         <div class="chart-box"><canvas id="scatter"></canvas></div>
       </div>
-      <div class="panel">
+      <div class="panel" data-pnl="mix">
         <div class="panel-head">
           <h2>Revenue Mix</h2>
           <div class="mix-tools">
             <label class="mini-sw"><span>ROS growth</span><button class="switch light" id="yoySwitch" type="button" role="switch" aria-label="Show ROS growth (year-on-year)"></button></label>
             <div class="slicer" id="slicer"></div>
+            <button type="button" class="zoom-btn" data-zoom="mix" title="Enlarge" aria-label="Enlarge"><svg class="z-in" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M10 20H4v-6M20 4l-6.5 6.5M4 20l6.5-6.5"/></svg><svg class="z-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10h-6V4M4 14h6v6M14 10l6.5-6.5M10 14l-6.5 6.5"/></svg></button>
           </div>
         </div>
         <div class="chart-box"><canvas id="stacked"></canvas></div>
@@ -562,18 +587,19 @@ html.tight .quad .mtx td{height:27px}
       </div>
       <div class="dots" id="dotsCharts"></div>
       <div class="swipe" id="swMx">
-      <div class="panel">
+      <div class="panel" data-pnl="bench">
         <div class="panel-head mtx-head">
           <div class="mx-tools">
             <button class="tswitch light" id="mxSwitch" type="button" role="switch" aria-label="Benchmarking / Trending"><span>Benchmarking</span><span>Trending</span></button>
             <button class="pick" id="trendPick" type="button" aria-label="Select legend"></button>
           </div>
-          <span class="sub" id="benchSub"></span>
+          <div class="ph-r"><span class="sub" id="benchSub"></span><button type="button" class="zoom-btn" data-zoom="bench" title="Enlarge" aria-label="Enlarge"><svg class="z-in" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M10 20H4v-6M20 4l-6.5 6.5M4 20l6.5-6.5"/></svg><svg class="z-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10h-6V4M4 14h6v6M14 10l6.5-6.5M10 14l-6.5 6.5"/></svg></button></div>
         </div>
         <div class="tbl-wrap"><table class="mtx" id="bench"></table><div class="mobile-matrix" id="benchMobile"></div></div>
       </div>
-      <div class="panel">
-        <div class="panel-head mtx-head"><h2>Comparison</h2></div>
+      <div class="panel" data-pnl="cmp">
+        <div class="panel-head mtx-head"><div class="cmp-title"><h2>Comparison</h2>
+          <button class="tswitch light cmpn" id="cmpNSwitch" type="button" role="switch" aria-label="Number of comparisons"><span>1</span><span>2</span></button></div><div class="ph-r"><button type="button" class="zoom-btn" data-zoom="cmp" title="Enlarge" aria-label="Enlarge"><svg class="z-in" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M10 20H4v-6M20 4l-6.5 6.5M4 20l6.5-6.5"/></svg><svg class="z-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10h-6V4M4 14h6v6M14 10l6.5-6.5M10 14l-6.5 6.5"/></svg></button></div></div>
         <div class="tbl-wrap cmp-wrap"><table class="mtx cmp" id="cmp"></table><div class="mobile-matrix" id="cmpMobile"></div></div>
       </div>
       </div>
@@ -713,7 +739,7 @@ let storageOK = true;
 const newRow = year => ({ legend: '', cat: 'ROS', year: year ?? THIS_YEAR, price: 0, qty: 0 });
 function load() {
   const def = { rows: [newRow()], colors: {}, currency: 'THB', rate: DEFAULT_RATE, unit: 'none',
-                qtyMode: 'variable', fixedQty: 0, cmp: [['', ''], ['', '']], project: '', yoy: true, mxMode: 'bench', trendLegend: '', posX: 'price', posY: 'volume', defV: 2 };
+                qtyMode: 'variable', fixedQty: 0, cmp: [['', ''], ['', '']], project: '', cmpN: 2, yoy: true, mxMode: 'bench', trendLegend: '', posX: 'price', posY: 'volume', defV: 2 };
   try {
     const s = JSON.parse(localStorage.getItem(STORE_KEY));
     if (s && Array.isArray(s.rows)) {
@@ -878,9 +904,9 @@ function dashFits() {
     if (lg.scrollWidth > lg.clientWidth + 1 && lg.clientWidth < 110) return false;
   }
   for (const w of document.querySelectorAll('.quad .tbl-wrap'))
-    if (w.scrollWidth > w.clientWidth + 1 || w.scrollHeight > w.clientHeight + 1) return false;
-  for (const p of document.querySelectorAll('.quad .panel')) if (p.scrollHeight > p.clientHeight + 1) return false;
-  for (const c of document.querySelectorAll('.quad .chart-box')) if (c.clientHeight < MIN_CHART_H) return false;
+    if (w.offsetParent && (w.scrollWidth > w.clientWidth || w.scrollHeight > w.clientHeight)) return false;   // strict: not even 1px of scrollbar
+  for (const p of document.querySelectorAll('.quad .panel')) if (p.offsetParent && p.scrollHeight > p.clientHeight + 1) return false;
+  for (const c of document.querySelectorAll('.quad .chart-box')) if (c.offsetParent && c.clientHeight < MIN_CHART_H) return false;
   const m = document.querySelector('main');
   return m.scrollHeight <= m.clientHeight + 1;
 }
@@ -888,12 +914,12 @@ function inputFits() {
   const ph = document.querySelector('#page-input .panel-head'), w = document.getElementById('inputWrap');
   return ph.scrollWidth <= ph.clientWidth + 1 && w.scrollWidth <= w.clientWidth + 1;
 }
+/* matrix density levels, tried in order: normal -> dense -> densest */
+const DENSITY = [[], ['dense'], ['dense', 'dense2']];
+function setDensity(i) { const c = document.documentElement.classList; c.remove('dense', 'dense2'); DENSITY[i].forEach(x => c.add(x)); }
 function probe(sc) {
-  document.documentElement.classList.remove('dense');
-  if (probeAt(sc)) return true;
-  document.documentElement.classList.add('dense');          // matrices still too wide / tall: tighten their spacing
-  if (probeAt(sc)) return true;
-  document.documentElement.classList.remove('dense');
+  for (let i = 0; i < DENSITY.length; i++) { setDensity(i); if (probeAt(sc)) return true; }
+  setDensity(0);
   return false;
 }
 function probeAt(sc) {
@@ -916,7 +942,7 @@ function applyFit() {
       sc = Math.floor(lo * 1000) / 1000;
     }
   }
-  if (!probe(sc)) { document.documentElement.classList.add('dense'); probeAt(sc); }     // last resort: densest matrices at the final scale
+  if (!probe(sc)) { setDensity(DENSITY.length - 1); probeAt(sc); }     // last resort: densest matrices at the final scale
   return Math.abs(sc - prev) > 0.0005;
 }
 const resetCharts = () => { scatterChart && scatterChart.destroy(); stackedChart && stackedChart.destroy(); scatterChart = stackedChart = null; };
@@ -1639,7 +1665,15 @@ const stackLabels = {
         segs.push({ ds, i, v, bar, h, g });
       });
     });
-    /* pass 2: every category in the same column uses the same wrapping (e.g. 15.0M / 2.5M / 0.2M) */
+    /* the column totals take part in the decision too, then ONE level is used for every label in the chart:
+       if any label needs M, all segment labels and all column totals are shown in M (e.g. 1.1 M, not 1,100,000) */
+    let L = 0;
+    groups.forEach(g => {
+      L = Math.max(L, g.lvl);
+      if (g.tot > 0) { ctx.font = '700 11px ' + css('--font'); L = Math.max(L, numLevel(ctx, g.tot, g.w - 2)); }
+    });
+    groups.forEach(g => g.lvl = L);
+    /* pass 2: every label uses the shared level */
     segs.forEach(({ ds, i, v, bar, h, g }) => {
       const mid = (bar.y + bar.base) / 2;
       ctx.font = FONT_R(); ctx.fillStyle = '#fff';
@@ -1658,8 +1692,8 @@ const stackLabels = {
     groups.forEach(g => {
       if (g.tot <= 0) return;
       ctx.font = '700 11px ' + css('--font'); ctx.fillStyle = css('--text');
-      /* same wrapping rule as the column labels: full number if it fits the column width, else K / M */
-      const tt = chartNum(ctx, g.tot, g.w - 2), tw = ctx.measureText(tt).width;
+      /* total uses the same shared level as every segment label */
+      const tt = numAt(g.tot, g.lvl), tw = ctx.measureText(tt).width;
       ctx.fillText(tt, g.x, g.top - 10);
       chart.$tot.push({ x1: g.x - Math.max(tw, 14) / 2 - 4, x2: g.x + Math.max(tw, 14) / 2 + 4, y1: g.top - 20, y2: g.top, ds: g.ds, idx: g.idx, tot: g.tot });
       ctx.font = '600 10px ' + css('--font'); ctx.fillStyle = css('--muted');
@@ -1921,14 +1955,14 @@ function syncMxHeads() {
   const ths = [...document.querySelectorAll('#bench thead th, #cmp thead th')];
   ths.forEach(th => th.style.height = '');
   const b = document.querySelector('#bench thead tr'), c = document.querySelector('#cmp thead tr');
-  if (isPhonePortrait() || !b || !c) return;
+  if (isPhonePortrait() || isZoomed() || !b || !c) return;
   const h = Math.max(b.getBoundingClientRect().height, c.getBoundingClientRect().height) / fitS;
   ths.forEach(th => th.style.height = h + 'px');
 }
 function fitQuad() {
   const quad = document.querySelector('.quad'); if (!quad) return;
   quad.style.gridTemplateRows = '';
-  if (isPhonePortrait()) return;
+  if (isPhonePortrait() || isZoomed()) return;
   const panels = [...document.querySelectorAll('#swMx .panel')]; if (!panels.length) return;
   const need = Math.max(...panels.map(p => { const tw = p.querySelector('.tbl-wrap'); return Math.max(p.scrollHeight, p.clientHeight - tw.clientHeight + tw.scrollHeight); }));
   const have = Math.min(...panels.map(p => p.clientHeight));
@@ -1938,6 +1972,24 @@ function fitQuad() {
   }
 }
 const afterMx = () => { syncMxHeads(); fitQuad(); };
+/* ---------- Enlarge one chart / matrix to fill the area from the cards down to the matrices ---------- */
+let zoomKey = null;
+const isZoomed = () => !!zoomKey;
+function setZoom(k) {
+  zoomKey = (isPhonePortrait() || k === zoomKey) ? null : k;
+  document.getElementById('page-dashboard').classList.toggle('zoomed', !!zoomKey);
+  document.querySelectorAll('.quad [data-pnl]').forEach(p => p.classList.toggle('zoom-on', p.dataset.pnl === zoomKey));
+  document.querySelectorAll('.zoom-btn').forEach(b => { const on = b.dataset.zoom === zoomKey; b.title = on ? 'Back to dashboard' : 'Enlarge'; b.setAttribute('aria-label', b.title); });
+  resetCharts(); renderDashboard();
+}
+document.querySelectorAll('.zoom-btn').forEach(b => b.onclick = e => { e.stopPropagation(); setZoom(b.dataset.zoom); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && zoomKey && !document.querySelector('.pop.open, #csPop.open, #pickPop.open')) setZoom(zoomKey); });
+/* re-measure the page scale after a matrix changed on its own (Trending switch, picks, comparison toggles) */
+function refit() {
+  if (fitBusy) return;
+  fitBusy = true;
+  try { if (applyFit()) { resetCharts(); renderDashboard(); } } finally { fitBusy = false; }
+}
 
 /* Update an existing chart in place (no destroy / re-create) so it does not blink */
 const anim = () => isPhonePortrait() ? false : { duration: 300 };
@@ -1979,13 +2031,13 @@ function renderCompareMobile(data) {
     const pct = Y ? `${d > 0 ? '+' : '-'}${fmt0(Math.abs(d / Y * 100))}%` : 'n/a';
     return d > 0 ? `<span class="ball up">▲ ${v} | ${pct}</span>` : `<span class="ball down">▼ ${v} | ${pct}</span>`;
   };
-  /* 2 comparison cards (same buckets as the normal view) */
-  box.innerHTML = state.cmp.map((pair, k) => `
+  /* 1 or 2 comparison cards (same buckets and toggle as the normal view) */
+  box.innerHTML = state.cmp.slice(0, cmpCount(names.length)).map((pair, k) => `
     <div class="mc">
-      <div class="mc-head">${csBtn(k, 0, pair[0])}<span class="sub">vs</span>${csBtn(k, 1, pair[1])}</div>
+      <div class="mc-head">${csBtn(k, 0, pair[0])}${swapBtn(k)}${csBtn(k, 1, pair[1])}</div>
       <div class="mc-grid">${MX_ORDER.map(i => `<div class="mc-cell"><span class="mc-l">${MX_SHORT[i]}</span><span class="mc-v">${cell(ATTRS[i], pair)}</span></div>`).join('')}</div>
     </div>`).join('');
-  bindCs(box, names);
+  bindCs(box, names); bindSwap(box);
 }
 
 /* ----- Swipe dots (mobile portrait) ----- */
@@ -2009,7 +2061,7 @@ function paintMx() {
   mxSw.children[0].classList.toggle('act', !tr); mxSw.children[1].classList.toggle('act', tr);
   trendPick.classList.toggle('show', tr);
 }
-mxSw.onclick = () => { state.mxMode = state.mxMode === 'trend' ? 'bench' : 'trend'; paintMx(); closePick(); save(); renderBench(aggregate(), unitLabel()); };
+mxSw.onclick = () => { state.mxMode = state.mxMode === 'trend' ? 'bench' : 'trend'; paintMx(); closePick(); save(); renderBench(aggregate(), unitLabel()); refit(); };
 function paintPick() {
   const n = state.trendLegend;
   trendPick.innerHTML = n ? `<i class="dot" style="background:${dispColor(n)}"></i><span class="pk-t">${esc(n)}</span><span class="pk-c">&#9662;</span>`
@@ -2021,7 +2073,7 @@ trendPick.onclick = e => {
   if (pickPop.classList.contains('open')) { closePick(); return; }
   const names = legendNames().filter(n => !offLegends.has(n));
   pickPop.innerHTML = names.map(n => `<div class="pk-o ${n === state.trendLegend ? 'cur' : ''}" data-v="${esc(n)}"><i class="dot" style="background:${dispColor(n)}"></i>${esc(n)}</div>`).join('') || '<div class="pk-o">No legends</div>';
-  pickPop.querySelectorAll('[data-v]').forEach(o => o.onclick = () => { state.trendLegend = o.dataset.v; closePick(); save(); renderBench(aggregate(), unitLabel()); });
+  pickPop.querySelectorAll('[data-v]').forEach(o => o.onclick = () => { state.trendLegend = o.dataset.v; closePick(); save(); renderBench(aggregate(), unitLabel()); refit(); });
   const b = trendPick.getBoundingClientRect(), w = Math.max(b.width, 180);
   pickPop.style.width = w + 'px';
   pickPop.style.left = Math.max(8, Math.min(b.left, innerWidth - w - 8)) + 'px';
@@ -2106,9 +2158,32 @@ function fixPairs(names) {
     if (!names.includes(p[0])) p[0] = names[0];
     if (!names.includes(p[1]) || p[1] === p[0]) p[1] = names.find((n, i) => n !== p[0] && i >= Math.min(k + 1, names.length - 1)) || names.find(n => n !== p[0]);
   });
+  const same = (a, b) => (a[0] === b[0] && a[1] === b[1]) || (a[0] === b[1] && a[1] === b[0]);
+  if (names.length >= 3 && same(state.cmp[0], state.cmp[1])) state.cmp[1][1] = names.find(n => n !== state.cmp[0][0] && n !== state.cmp[0][1]);
   if (JSON.stringify(state.cmp) !== before) save();
 }
 /* ----- Comparison dropdowns (custom; see CSS .cs) ----- */
+/* number of comparison buckets: the toggle (1 / 2); forced to 1 when only 2 Legends are shown */
+const cmpNSw = document.getElementById('cmpNSwitch');
+const cmpCount = n => (n <= 2 ? 1 : (state.cmpN === 1 ? 1 : 2));
+function paintCmpN(n) {
+  const locked = n <= 2, v = cmpCount(n);
+  cmpNSw.classList.toggle('on', v === 2); cmpNSw.classList.toggle('locked', locked);
+  cmpNSw.children[0].classList.toggle('act', v === 1); cmpNSw.children[1].classList.toggle('act', v === 2);
+  cmpNSw.setAttribute('aria-checked', v === 2); cmpNSw.setAttribute('aria-disabled', locked);
+  cmpNSw.title = locked ? 'Only 2 Legends are shown: 1 comparison' : 'Show 1 or 2 comparisons';
+}
+cmpNSw.onclick = () => {
+  if (cmpNSw.classList.contains('locked')) { toast('Only 2 Legends are shown, so there is 1 comparison.'); return; }
+  state.cmpN = state.cmpN === 1 ? 2 : 1; save(); renderCompare(aggregate()); refit();
+};
+const swapBtn = k => `<button type="button" class="swap cmp-swap" data-c="${k}" title="Swap the two legends" aria-label="Swap the two legends">${'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h15m-4-4 4 4-4 4M20 16H5m4 4-4-4 4-4"/></svg>'}</button>`;
+function bindSwap(root) {
+  root.querySelectorAll('.cmp-swap').forEach(b => b.onclick = e => {
+    e.stopPropagation(); const p = state.cmp[+b.dataset.c]; [p[0], p[1]] = [p[1], p[0]];
+    save(); renderCompare(aggregate()); refit();
+  });
+}
 const csPop = document.getElementById('csPop');
 const csBtn = (k, s, cur) => `<span class="cs"><button type="button" class="cs-b" data-c="${k}" data-s="${s}" title="${esc(cur)}"><span class="cs-t">${esc(cur)}</span></button></span>`;
 function closeCs() { csPop.classList.remove('open'); csPop._btn = null; }
@@ -2120,7 +2195,7 @@ function bindCs(root, names) {
     csPop._btn = btn;
     /* a Legend can never be compared with itself: the other side's choice is not offered */
     csPop.innerHTML = names.filter(n => n !== other).map(n => `<div class="cs-o ${n === cur ? 'cur' : ''}" data-v="${esc(n)}">${esc(n)}</div>`).join('');
-    csPop.querySelectorAll('.cs-o').forEach(o => o.onclick = () => { state.cmp[k][s] = o.dataset.v; closeCs(); save(); renderCompare(aggregate()); });
+    csPop.querySelectorAll('.cs-o').forEach(o => o.onclick = () => { state.cmp[k][s] = o.dataset.v; closeCs(); save(); renderCompare(aggregate()); refit(); });
     const slot = btn.parentElement.getBoundingClientRect(), grown = btn.getBoundingClientRect(), w = Math.max(slot.width, 170);
     csPop.style.width = w + 'px'; csPop.classList.add('open');
     const h = Math.min(csPop.scrollHeight, 260);
@@ -2134,6 +2209,7 @@ window.addEventListener('scroll', e => { if (!csPop.contains(e.target)) closeCs(
 /* ----- Comparison ----- */
 function renderCompare(data) {
   const t = document.getElementById('cmp');
+  paintCmpN(data.length);
   if (data.length < 2) { t.innerHTML = '<tbody><tr><td class="empty">Add at least 2 legends to compare</td></tr></tbody>'; renderCompareMobile(data); afterMx(); return; }
   const names = data.map(a => a.legend);
   fixPairs(names);
@@ -2145,11 +2221,13 @@ function renderCompare(data) {
     const pct = Y ? `${d > 0 ? '+' : '-'}${fmt0(Math.abs(d / Y * 100))}%` : 'n/a';
     return d > 0 ? `<span class="ball up">▲ ${v} | ${pct}</span>` : `<span class="ball down">▼ ${v} | ${pct}</span>`;
   };
-  const head = k => `<th class="num"><div class="pairhead">${csBtn(k, 0, state.cmp[k][0])}<span class="sub">vs</span>${csBtn(k, 1, state.cmp[k][1])}</div></th>`;
+  const head = k => `<th class="num"><div class="pairhead">${csBtn(k, 0, state.cmp[k][0])}${swapBtn(k)}${csBtn(k, 1, state.cmp[k][1])}</div></th>`;
+  const N = cmpCount(names.length), ks = N === 1 ? [0] : [0, 1];
+  paintCmpN(names.length);
   t.innerHTML = `
-    <thead><tr><th></th>${head(0)}${head(1)}</tr></thead>
-    <tbody>${ATTRS.map(at => `<tr><td>${at.name}</td><td class="num">${cell(at, state.cmp[0])}</td><td class="num">${cell(at, state.cmp[1])}</td></tr>`).join('')}</tbody>`;
-  bindCs(t, names);
+    <thead><tr><th></th>${ks.map(head).join('')}</tr></thead>
+    <tbody>${ATTRS.map(at => `<tr><td>${at.name}</td>${ks.map(k => `<td class="num">${cell(at, state.cmp[k])}</td>`).join('')}</tr>`).join('')}</tbody>`;
+  bindCs(t, names); bindSwap(t);
   renderCompareMobile(data);
   afterMx();
 }
@@ -2161,7 +2239,7 @@ function renderAll() { renderInput(); renderDashboard(); }
 paintUnit(); projIn.value = state.project || '';
 paintProject(); paintSwitch(); paintQtyMode(); paintYoy(); paintPos(); paintMx(); buildSlicer(); placeControls(); save();
 setupSwipe('swCharts', 'dotsCharts'); setupSwipe('swMx', 'dotsMx');
-PORTRAIT_MQ.addEventListener('change', () => { placeControls(); renderDashboard(); });
+PORTRAIT_MQ.addEventListener('change', () => { placeControls(); if (zoomKey && isPhonePortrait()) setZoom(zoomKey); else renderDashboard(); });
 if (!storageOK) document.getElementById('storageWarn').classList.add('show');
 renderAll();
 let rzT, lastW = innerWidth;
