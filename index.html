@@ -100,10 +100,26 @@ main{flex:1 1 auto;min-height:0;padding:12px 24px 14px}
 /* ---------- Dashboard ---------- */
 #page-dashboard{gap:10px}
 .filter-row{flex:0 0 auto;display:flex;align-items:center;gap:8px;min-height:28px}
-.filter-row .flabel{font-size:12px;font-weight:600;color:var(--muted);margin-right:2px}
-.yr{display:flex;gap:6px;flex-wrap:wrap}
-.yr button{border:0;background:#fff;box-shadow:var(--shadow);padding:5px 14px;font:inherit;font-size:12px;cursor:pointer;color:var(--muted);border-radius:999px;transition:.15s}
-.yr button.on{background:var(--primary);color:#fff;font-weight:600}
+.filter-row .flabel{font-size:12px;font-weight:600;color:var(--muted);margin-right:0}
+.filter-row .dfbtn+.flabel{margin-left:12px}
+/* D27: Legend / Year multi-select dropdowns (each with a "Select all" option) */
+.dfbtn{display:inline-flex;align-items:center;gap:6px;max-width:230px;min-width:0;height:26px;padding:0 11px;border:1px solid #E2DDF0;border-radius:999px;background:var(--tint);color:var(--primary);font:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:background .15s,border-color .15s}
+.dfbtn:hover{background:#E9E4F5}
+.dfbtn.act{border-color:var(--secondary)}
+.dfbtn[aria-expanded="true"]{background:#E4DEF3}
+.dfbtn .df-t{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:inline-flex;align-items:center}
+.dfbtn .df-c{flex:none;font-size:9px;color:var(--muted)}
+.dfbtn .dot{width:7px;height:7px;margin-right:3px;flex:none}
+#dfPop{display:none;position:fixed;z-index:46;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(46,26,107,.16);padding:6px;max-height:320px;overflow:auto;font-size:12px}
+#dfPop.open{display:block}
+#dfPop .df-q{margin-bottom:5px;padding:6px 10px;font-size:12px}
+.df-o{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;cursor:pointer;white-space:nowrap;user-select:none}
+.df-o:hover{background:var(--tint)}
+.df-o input{accent-color:var(--primary);margin:0;flex:none;width:14px;height:14px}
+.df-o span{overflow:hidden;text-overflow:ellipsis}
+.df-o .dot{margin-right:0;flex:none}
+.df-all{font-weight:700;color:var(--primary);border-bottom:1px solid var(--line);border-radius:8px 8px 0 0;margin-bottom:3px}
+.df-none{padding:8px;color:var(--muted)}
 .cards{flex:0 0 auto;display:flex;gap:12px;overflow-x:auto;padding-bottom:2px}
 .card{flex:0 1 320px;min-width:230px;background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .card .left{min-width:0;border-left:4px solid;border-radius:2px;padding-left:10px}
@@ -273,11 +289,6 @@ th,td{padding:0 10px;text-align:left;white-space:nowrap}
 .pos-head{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap}
 .pos-head h2{margin:0}
 .pos-head select{border:1px solid #E2DDF0;border-radius:999px;padding:3px 10px;height:26px;font:inherit;font-weight:700;color:var(--primary);background:var(--tint);cursor:pointer;min-width:0}
-/* D15: subtle eye control after the Legend name */
-.lgrow{display:flex;align-items:center;gap:5px;min-width:0}.lgrow .lg{flex:0 1 auto;min-width:0}
-.eye{flex:0 0 auto;width:18px;height:18px;padding:0;border:0;background:transparent;color:#AAA7B5;display:grid;place-items:center;cursor:pointer;border-radius:50%;transition:color .15s,background .15s}
-.eye svg{width:15px;height:15px}.eye:hover{color:#777384;background:#F1F0F5}.eye .eye-off{display:none}.eye:not(.on) .eye-open{display:none}.eye:not(.on) .eye-off{display:block;color:#C4C1CB}
-.eye:focus-visible{outline:2px solid #CDC8DD;outline-offset:1px}.card.off .lg,.card.off .tot,.card.off .cur,.card.off .right{opacity:.42}.card.off .left{border-left-color:#D5D1E2!important}
 /* D28: long Legend names wrap inside the Benchmarking header (max ~150px) instead of widening the whole matrix */
 .mtx th .nm{display:inline-block;max-width:150px;white-space:normal;overflow-wrap:anywhere;word-break:break-word;vertical-align:middle;line-height:1.2;text-align:right}
 /* D28: dense matrices - applied only when a matrix would otherwise need a scrollbar at the smallest comfortable scale */
@@ -364,16 +375,14 @@ html.tight .quad .mtx td{height:27px}
   main{flex:none;height:auto;padding:calc(var(--hdrH,84px) + 8px) 8px 16px;overflow:visible}
   .page{height:auto}
   #page-dashboard{gap:8px}
-  .filter-row{min-height:0;gap:6px;overflow-x:auto}
-  .yr{flex-wrap:nowrap}
-  .yr button{padding:4px 11px;font-size:11px;flex:none}
+  .filter-row{min-height:0;gap:6px;flex-wrap:wrap}
+  .dfbtn{height:24px;font-size:11px;max-width:150px;padding:0 9px}
 
   /* ---- Revenue cards: same layout as normal view (total left, breakdown right), 2 per row ---- */
   .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;overflow:visible;padding:0}
   .card{flex:none;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:8px 8px 8px 9px}
   .card .left{min-width:0;flex:1 1 auto;border-left-width:3px;padding-left:6px}
   .card .lg{font-size:11.5px;line-height:1.3}
-  .eye{width:16px;height:16px}.eye svg{width:13px;height:13px}.lgrow{gap:3px}
   .card .tot{font-size:13px;line-height:1.25;overflow:hidden;text-overflow:ellipsis}
   .card .tot.lg2{font-size:11.5px}.card .tot.xl{font-size:10px}
   .card .right .lf{display:none}.card .right .ls{display:inline}
@@ -502,7 +511,7 @@ html.tight .quad .mtx td{height:27px}
   main{padding:8px 12px 10px}
   #page-dashboard{gap:6px}
   .filter-row{min-height:22px}
-  .yr button{padding:3px 9px;font-size:10px}
+  .dfbtn{height:22px;font-size:10px;padding:0 8px}
   .cards{gap:7px}
   .card{min-width:205px;max-width:260px;padding:7px 10px}
   .card .lg{font-size:12px}.card .tot{font-size:16px}.card .cur,.card .right{font-size:9.5px}
@@ -561,8 +570,10 @@ html.tight .quad .mtx td{height:27px}
   <!-- ================= DASHBOARD ================= -->
   <section class="page active" id="page-dashboard">
     <div class="filter-row">
+      <span class="flabel">Legend</span>
+      <button type="button" class="dfbtn" id="dfLegend" data-df="legend" aria-haspopup="listbox" aria-expanded="false" aria-label="Select Legends"></button>
       <span class="flabel">Year</span>
-      <div class="yr" id="yearSlicer"></div>
+      <button type="button" class="dfbtn" id="dfYear" data-df="year" aria-haspopup="listbox" aria-expanded="false" aria-label="Select Years"></button>
     </div>
 
     <div class="cards" id="cards"></div>
@@ -689,6 +700,7 @@ html.tight .quad .mtx td{height:27px}
 <div id="toast" class="no-export"></div>
 <div id="legendMenu" class="no-export"></div>
 <div id="mselPop" class="no-export"></div>
+<div id="dfPop" class="no-export"></div>
 <div id="pickPop" class="no-export"></div>
 <div id="csPop" class="no-export"></div>
 <!-- Data file menu (hidden) -->
@@ -759,7 +771,7 @@ function save() {
 let state = load();
 let slicerSel = new Set(CATS);      // revenue type slicer (Revenue Mix only)
 let yearSel = null;                 // year slicer: null = all years (default)
-let offLegends = new Set();         // Legends hidden by the eye control (default: all visible)
+let offLegends = new Set();         // Legends un-selected in the Legend dropdown (default: none, i.e. all Legends selected)
 let scatterChart = null, stackedChart = null;
 
 /* =========================================================
@@ -843,7 +855,7 @@ projIn.addEventListener('input', () => { state.project = projIn.value; paintProj
 function showPage(p) {
   document.querySelectorAll('#nav button').forEach(x => x.classList.toggle('active', x.dataset.page === p));
   document.querySelectorAll('.page').forEach(s => s.classList.toggle('active', s.id === 'page-' + p));
-  closeMenu();
+  closeMenu(); closeDf();
   if (p === 'dashboard') renderDashboard(); else applyFit();
 }
 document.querySelectorAll('#nav button').forEach(b => b.onclick = () => showPage(b.dataset.page));
@@ -1741,23 +1753,100 @@ function buildSlicer() {
   });
 }
 
-/* Year slicer: "All" (default) + one pill per year.
-   From "All", clicking a year selects only that year; then clicks add/remove years. */
-function buildYearSlicer() {
-  const box = document.getElementById('yearSlicer'), ys = allYears();
-  if (yearSel) { yearSel = new Set([...yearSel].filter(y => ys.includes(y))); if (!yearSel.size || yearSel.size === ys.length) yearSel = null; }
-  box.innerHTML = `<button data-y="*" class="${yearSel ? '' : 'on'}">All</button>` +
-    ys.map(y => `<button data-y="${y}" class="${!yearSel || yearSel.has(y) ? (yearSel ? 'on' : '') : ''}">${y}</button>`).join('');
-  box.querySelectorAll('button').forEach(b => b.onclick = () => {
-    const y = b.dataset.y;
-    if (y === '*') yearSel = null;
-    else if (!yearSel) yearSel = new Set([y]);
-    else {
-      yearSel.has(y) ? yearSel.delete(y) : yearSel.add(y);
-      if (!yearSel.size || yearSel.size === ys.length) yearSel = null;
-    }
-    renderDashboard();
+/* ---------- Dashboard filters: Legend and Year as multi-select dropdowns (each with "Select all") ----------
+   Legend: un-selected Legends are held in offLegends (default none = all selected).
+   Year  : yearSel = null means all years (default); otherwise the Set of selected years (an empty Set = none selected). */
+const DF = {
+  legend: { all: 'All legends',
+    opts: () => legendNames().map(n => ({ v: n, t: n, dot: dispColor(n) })),
+    isOn: v => !offLegends.has(v),
+    set(vs, on) { vs.forEach(v => on ? offLegends.delete(v) : offLegends.add(v)); } },
+  year: { all: 'All years',
+    opts: () => allYears().map(y => ({ v: y, t: y })),
+    isOn: v => !yearSel || yearSel.has(v),
+    set(vs, on) {
+      const ys = allYears(); if (!yearSel) yearSel = new Set(ys);
+      vs.forEach(v => on ? yearSel.add(v) : yearSel.delete(v));
+      if (yearSel.size === ys.length) yearSel = null;                 // everything selected again = "all years"
+    } }
+};
+/* button captions + forget selections that no longer exist (a Legend was renamed / a Year was removed) */
+function paintDf() {
+  const ls = new Set(legendNames());
+  offLegends = new Set([...offLegends].filter(n => ls.has(n)));
+  const ys = allYears();
+  if (yearSel) {
+    const had = yearSel.size;
+    yearSel = new Set([...yearSel].filter(y => ys.includes(y)));
+    if (yearSel.size === ys.length || (had && !yearSel.size)) yearSel = null;
+  }
+  [['legend', 'dfLegend'], ['year', 'dfYear']].forEach(([k, id]) => {
+    const d = DF[k], btn = document.getElementById(id), opts = d.opts(), on = opts.filter(o => d.isOn(o.v));
+    let txt, dots = '';
+    if (!opts.length || on.length === opts.length) txt = d.all;
+    else if (!on.length) txt = 'None selected';
+    else if (on.length === 1 || (k === 'year' && on.length <= 3)) txt = esc(on.map(o => o.t).join(', '));
+    else txt = `${on.length} of ${opts.length} selected`;
+    if (k === 'legend' && on.length && on.length < opts.length) dots = on.slice(0, 4).map(o => `<i class="dot" style="background:${o.dot}"></i>`).join('');
+    btn.innerHTML = `<span class="df-t">${dots}${txt}</span><span class="df-c">&#9662;</span>`;
+    btn.classList.toggle('act', opts.length > 0 && on.length < opts.length);
+    btn.title = (k === 'legend' ? 'Legends: ' : 'Years: ') + (txt.replace(/<[^>]*>/g, ''));
   });
+}
+const dfPop = document.getElementById('dfPop');
+let dfKey = null, dfBtn = null;
+function drawDf(q = '') {
+  const k = dfKey, d = DF[k], all = dfPop.querySelector('#dfAll');
+  const opts = d.opts().filter(o => o.t.toLowerCase().includes(q.toLowerCase()));
+  dfPop.querySelector('.df-list').innerHTML = opts.length ? opts.map(o => `
+    <label class="df-o"><input type="checkbox" value="${esc(o.v)}" ${d.isOn(o.v) ? 'checked' : ''}>${o.dot ? `<i class="dot" style="background:${o.dot}"></i>` : ''}<span>${esc(o.t)}</span></label>`).join('')
+    : '<div class="df-none">No match</div>';
+  const boxes = () => [...dfPop.querySelectorAll('.df-list input')];
+  /* "Select all" reflects the options shown: checked = all on, dash = some on */
+  const syncAll = () => { const b = boxes(), n = b.filter(x => x.checked).length; all.disabled = !b.length; all.checked = b.length > 0 && n === b.length; all.indeterminate = n > 0 && n < b.length; };
+  boxes().forEach(cb => cb.onchange = () => { d.set([cb.value], cb.checked); afterDf(); syncAll(); });
+  all.onchange = () => { const b = boxes(); d.set(b.map(x => x.value), all.checked); b.forEach(x => x.checked = all.checked); afterDf(); syncAll(); };
+  syncAll();
+}
+function afterDf() { paintDf(); renderDashboard(); placeDf(); }
+function openDf(btn) {
+  const k = btn.dataset.df;
+  if (dfKey === k && dfPop.classList.contains('open')) { closeDf(); return; }
+  if (dfBtn) dfBtn.setAttribute('aria-expanded', 'false');
+  dfKey = k; dfBtn = btn;
+  const search = k === 'legend' && DF[k].opts().length > 6;                 // search box only for long Legend lists
+  dfPop.innerHTML = `${search ? '<input class="inp df-q" placeholder="Type to filter…" autocomplete="off">' : ''}
+    <label class="df-o df-all"><input type="checkbox" id="dfAll"><span>Select all</span></label>
+    <div class="df-list"></div>`;
+  drawDf();
+  const q = dfPop.querySelector('.df-q'); if (q) q.oninput = () => drawDf(q.value);
+  dfPop.classList.add('open'); btn.setAttribute('aria-expanded', 'true');
+  placeDf();
+  if (q && !PORTRAIT_MQ.matches) q.focus();
+}
+function placeDf() {
+  if (!dfBtn || !dfPop.classList.contains('open')) return;
+  const b = dfBtn.getBoundingClientRect(), w = Math.max(b.width, 200);
+  const h = Math.min(dfPop.scrollHeight, 320), below = innerHeight - b.bottom;
+  dfPop.style.width = w + 'px';
+  dfPop.style.left = Math.max(8, Math.min(b.left, innerWidth - w - 8)) + 'px';
+  dfPop.style.top = ((below < h + 8 && b.top > h + 8) ? b.top - h - 4 : b.bottom + 4) + 'px';
+}
+function closeDf() { dfPop.classList.remove('open'); if (dfBtn) dfBtn.setAttribute('aria-expanded', 'false'); dfKey = null; dfBtn = null; }
+document.querySelectorAll('.dfbtn').forEach(b => b.onclick = e => { e.stopPropagation(); openDf(b); });
+document.addEventListener('click', e => { if (!dfPop.contains(e.target) && !e.target.closest('.dfbtn')) closeDf(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && dfPop.classList.contains('open')) { closeDf(); e.stopImmediatePropagation(); } });
+window.addEventListener('scroll', e => { if (!dfPop.contains(e.target)) placeDf(); }, true);
+window.addEventListener('resize', placeDf);
+/* message for an empty card row / table: says when the Legend / Year filter is the reason */
+function filtMsg(need = 1) {
+  const base = need > 1 ? 'Add at least 2 legends to compare' : 'No data';
+  if (!state.rows.some(r => r.legend.trim())) return base;
+  if (yearSel && !yearSel.size) return 'Select a Year in the filter above';
+  const total = legendNames().length, vis = legendNames().filter(n => !offLegends.has(n)).length;
+  if (!vis) return 'Select a Legend in the filter above';
+  if (need > 1 && vis < 2) return total < 2 ? base : 'Select at least 2 Legends in the filter above';
+  return base;
 }
 
 function range(vals, padPct) {
@@ -1787,29 +1876,22 @@ function renderDashboard() {
   }
   Chart.defaults.font.family = css('--font'); Chart.defaults.font.size = 11; Chart.defaults.color = css('--muted');
   Chart.defaults.devicePixelRatio = (window.devicePixelRatio || 1) * fitS;
-  buildYearSlicer();
-  offLegends = new Set([...offLegends].filter(n => legendNames().includes(n)));
+  paintDf();
   const rows = filteredRows(), data = aggregate(rows), U = unitLabel();
-  const cardData = aggregate(filteredRows(false));
   const noGrid = { grid: { display: false }, border: { color: css('--line') }, ticks: { padding: 4, callback: v => fmtR(v) } };
 
   /* ----- Cards (selected years, total) ----- */
-  document.getElementById('cards').innerHTML = cardData.length ? cardData.map(a => { const on = !offLegends.has(a.legend); return `
-    <div class="card ${on ? '' : 'off'}">
+  document.getElementById('cards').innerHTML = data.length ? data.map(a => `
+    <div class="card">
       <div class="left" style="border-color:${a.color}">
-        <div class="lgrow"><div class="lg" style="color:${a.color}" title="${esc(a.legend)}">${esc(a.legend)}</div>
-          <button type="button" class="eye ${on ? 'on' : ''}" data-lg="${esc(a.legend)}" role="checkbox" aria-checked="${on}" title="${on ? 'Hide' : 'Show'} ${esc(a.legend)} in all charts and tables" aria-label="Show ${esc(a.legend)} in all charts and tables">
-            <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6S2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.7"/></svg>
-            <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 6.2A10.4 10.4 0 0112 6c6 0 9.5 6 9.5 6a16.5 16.5 0 01-2.4 3.1M6.2 6.2C3.8 8 2.5 12 2.5 12s3.5 6 9.5 6a10 10 0 004-.8"/></svg>
-          </button></div>
+        <div class="lg" style="color:${a.color}" title="${esc(a.legend)}">${esc(a.legend)}</div>
         <div class="tot" data-v="${rev(a.total)}"></div>
         <div class="cur">Total Revenue (${U})</div>
       </div>
       <div class="right">
         ${CATS.map(c => `<span><i class="dot" style="background:${CAT_COLOR[c]}"></i><b class="lf">${c}</b><b class="ls">${c === 'Instrument' ? 'Instr.' : c}</b></span><span class="cv" data-v="${rev(a[c])}"></span>`).join('')}
       </div>
-    </div>`; }).join('') : '<div class="card"><span class="empty">No data yet. Add rows in Data Input.</span></div>';
-  document.querySelectorAll('#cards .eye').forEach(b => b.onclick = () => { const n=b.dataset.lg; offLegends.has(n)?offLegends.delete(n):offLegends.add(n); renderDashboard(); });
+    </div>`).join('') : `<div class="card"><span class="empty">${filtMsg() === 'No data' ? 'No data yet. Add rows in Data Input.' : filtMsg()}</span></div>`;
   fitCards(U);
 
   /* ----- Positioning scatter (ROS, selected years in total): any two of Price / Volume / Revenue ----- */
@@ -1983,7 +2065,7 @@ function setZoom(k) {
   resetCharts(); renderDashboard();
 }
 document.querySelectorAll('.zoom-btn').forEach(b => b.onclick = e => { e.stopPropagation(); setZoom(b.dataset.zoom); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && zoomKey && !document.querySelector('.pop.open, #csPop.open, #pickPop.open')) setZoom(zoomKey); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && zoomKey && !document.querySelector('.pop.open, #csPop.open, #pickPop.open, #dfPop.open')) setZoom(zoomKey); });
 /* re-measure the page scale after a matrix changed on its own (Trending switch, picks, comparison toggles) */
 function refit() {
   if (fitBusy) return;
@@ -2006,7 +2088,7 @@ function renderBenchMobile(data) {
   const box = document.getElementById('benchMobile'), table = document.getElementById('bench');
   if (!isPhonePortrait()) { box.innerHTML = ''; table.classList.remove('mobile-hidden'); return; }
   table.classList.add('mobile-hidden');
-  if (!data.length) { box.innerHTML = '<div class="empty">No data</div>'; return; }
+  if (!data.length) { box.innerHTML = `<div class="empty">${filtMsg()}</div>`; return; }
   const ext = ATTRS.map(at => { const vs = data.map(at.val), mx = Math.max(...vs), mn = Math.min(...vs); return { mx, mn, scale: data.length > 1 && mx !== mn }; });
   box.innerHTML = data.map(a => `
     <div class="mc">
@@ -2021,7 +2103,7 @@ function renderCompareMobile(data) {
   const box = document.getElementById('cmpMobile'), table = document.getElementById('cmp');
   if (!isPhonePortrait()) { box.innerHTML = ''; table.classList.remove('mobile-hidden'); return; }
   table.classList.add('mobile-hidden');
-  if (data.length < 2) { box.innerHTML = '<div class="empty">Add at least 2 legends to compare</div>'; return; }
+  if (data.length < 2) { box.innerHTML = `<div class="empty">${filtMsg(2)}</div>`; return; }
   const names = data.map(a => a.legend), byName = n => data.find(a => a.legend === n);
   fixPairs(names);
   const opts = (cur, other) => names.filter(n => n !== other).map(n => `<option ${n === cur ? 'selected' : ''}>${esc(n)}</option>`).join('');
@@ -2104,7 +2186,7 @@ function renderTrend(U) {
   paintPick();
   document.getElementById('benchSub').textContent = `Revenue in ${U}`;
   t.classList.add('trend');
-  if (!L || !years.length) { t.innerHTML = '<tbody><tr><td class="empty">No data</td></tr></tbody>'; renderTrendMobile(L, years, per); afterMx(); return; }
+  if (!L || !years.length) { t.innerHTML = `<tbody><tr><td class="empty">${filtMsg()}</td></tr></tbody>`; renderTrendMobile(L, years, per); afterMx(); return; }
   t.innerHTML = `
     <thead><tr><th></th>${years.map(y => `<th class="num">${esc(y)}</th>`).join('')}</tr></thead>
     <tbody>${ATTRS.map(at => `<tr><td>${at.name}</td>${years.map((y, j) => {
@@ -2118,7 +2200,7 @@ function renderTrendMobile(L, years, per) {
   const box = document.getElementById('benchMobile'), table = document.getElementById('bench');
   if (!isPhonePortrait()) { box.innerHTML = ''; table.classList.remove('mobile-hidden'); return; }
   table.classList.add('mobile-hidden');
-  if (!L || !years.length) { box.innerHTML = '<div class="empty">No data</div>'; return; }
+  if (!L || !years.length) { box.innerHTML = `<div class="empty">${filtMsg()}</div>`; return; }
   box.innerHTML = years.map((y, j) => `
     <div class="mc">
       <div class="mc-head"><span class="mc-name">${esc(y)}</span></div>
@@ -2135,7 +2217,7 @@ function renderBench(data, U) {
   document.getElementById('bench').classList.remove('trend');
   document.getElementById('benchSub').textContent = `Revenue in ${U}`;
   const t = document.getElementById('bench');
-  if (!data.length) { t.innerHTML = '<tbody><tr><td class="empty">No data</td></tr></tbody>'; renderBenchMobile(data); afterMx(); return; }
+  if (!data.length) { t.innerHTML = `<tbody><tr><td class="empty">${filtMsg()}</td></tr></tbody>`; renderBenchMobile(data); afterMx(); return; }
   t.innerHTML = `
     <thead><tr><th></th>${data.map(a => `<th class="num" title="${esc(a.legend)}"><i class="dot" style="background:${a.color}"></i><span class="nm">${esc(a.legend)}</span></th>`).join('')}</tr></thead>
     <tbody>${ATTRS.map(at => {
@@ -2210,7 +2292,7 @@ window.addEventListener('scroll', e => { if (!csPop.contains(e.target)) closeCs(
 function renderCompare(data) {
   const t = document.getElementById('cmp');
   paintCmpN(data.length);
-  if (data.length < 2) { t.innerHTML = '<tbody><tr><td class="empty">Add at least 2 legends to compare</td></tr></tbody>'; renderCompareMobile(data); afterMx(); return; }
+  if (data.length < 2) { t.innerHTML = `<tbody><tr><td class="empty">${filtMsg(2)}</td></tr></tbody>`; renderCompareMobile(data); afterMx(); return; }
   const names = data.map(a => a.legend);
   fixPairs(names);
   const byName = n => data.find(a => a.legend === n);
@@ -2237,7 +2319,7 @@ function renderCompare(data) {
    ========================================================= */
 function renderAll() { renderInput(); renderDashboard(); }
 paintUnit(); projIn.value = state.project || '';
-paintProject(); paintSwitch(); paintQtyMode(); paintYoy(); paintPos(); paintMx(); buildSlicer(); placeControls(); save();
+paintProject(); paintSwitch(); paintQtyMode(); paintYoy(); paintPos(); paintMx(); buildSlicer(); paintDf(); placeControls(); save();
 setupSwipe('swCharts', 'dotsCharts'); setupSwipe('swMx', 'dotsMx');
 PORTRAIT_MQ.addEventListener('change', () => { placeControls(); if (zoomKey && isPhonePortrait()) setZoom(zoomKey); else renderDashboard(); });
 if (!storageOK) document.getElementById('storageWarn').classList.add('show');
